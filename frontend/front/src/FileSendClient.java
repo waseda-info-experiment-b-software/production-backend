@@ -8,7 +8,7 @@ public class FileSendClient {
 
     // サーバーと接続する
     try  {
-      InetAddress serverIP = InetAddress.getByName("production-java-1");
+      InetAddress serverIP = InetAddress.getByName("production-java-server-1");
       System.out.println("Connecting to Server... " + serverIP);
       socket = new Socket(serverIP, PORT);
       System.out.println("Established connection to Server... " + socket);

@@ -13,4 +13,4 @@ services:
       - 8081:8081
     tty: true
     volumes:
-      - ./frontend/client/src:/usr/src:cached
+      - ./frontend/front/src:/usr/src:cached
