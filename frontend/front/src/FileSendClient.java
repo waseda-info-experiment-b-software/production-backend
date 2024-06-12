@@ -1,32 +1,88 @@
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
+import javax.naming.NameNotFoundException;
 
 public class FileSendClient {
-  final static int PORT = 8080;
+  
   public static void main(String[] args) {
-    Socket socket = null;
+    Clientexp client = new Clientexp();
 
-    // サーバーと接続する
-    try  {
-      InetAddress serverIP = InetAddress.getByName("production-java-server-1");
-      System.out.println("Connecting to Server... " + serverIP);
-      socket = new Socket(serverIP, PORT);
-      System.out.println("Established connection to Server... " + socket);
+    String ipAddress = "production-java-server-1";
+    int port = 8080;
+    String branch = "main";
+    Scanner scanner = new Scanner(System.in);
+    String input;
 
-      // ファイルを送信する
-      try (
-        FileInputStream fis = new FileInputStream("sample2.txt");
-        OutputStream os = socket.getOutputStream()) {
-          byte[] buffer = new byte[1024];
-          int read;
-          while ((read = fis.read(buffer)) != -1) {
-            os.write(buffer, 0, read);
-          }
+    //byeという文字を入力するまでずっと実行する
+    while (true) {
+      System.out.print(client.getCurrentPath()+ " (" +branch + ")"+"$ ");
+      input = scanner.nextLine();
+
+      switch (input) {
+
+        case "bye":
+          System.out.println("Exiting program...");
+          scanner.close();
+          return;
+
+        case "help":
+          System.out.println("info of command");
+          break;
+
+        default:
+          if (input.startsWith("eva ")) {
+            String[] parts = input.split(" ");
+
+            switch (parts[1]) {
+              // ここではファイルを送っている
+              //ファイルが存在しなければ送らない(サーバー側に空のファイルができちゃうので)
+              case "send":
+
+                
+                if (!client.checkFileExists(client.getCurrentPath(), parts[2])){
+                  System.out.println("can not find such files");
+                }else{
+                  if(client.sendcommandServer(parts[1], ipAddress, port)){
+                    client.sendFilenameToServer(parts[2], ipAddress, port);
+                    client.sendFileToServer(parts[2], ipAddress, port);
+                    System.out.println("send files");
+                  }else{
+                    System.out.println("can not connect server");
+                  }
+
+                }
+                break;
+            
+
+
+              case "get":
+                break;
+
+              case "pull":
+                break;
+
+              case "push":
+                break;
+
+              
+              default:
+                System.out.println("Invalid command format");
+                break;
+ 
+              
+            }
+      } else {
+          System.out.println("Command not found");
       }
-
-      System.out.println("File Transport Successful...");
-    } catch (IOException e) {
-      e.printStackTrace();
+      break;
+          
+      }
     }
   }
 }
+
+  
+  
+
+

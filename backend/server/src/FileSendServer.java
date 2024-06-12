@@ -4,31 +4,39 @@ import java.net.*;
 public class FileSendServer {
   final static int PORT = 8080;
   public static void main(String[] args) {
-    // サーバーソケットを開く
-    try (ServerSocket s = new ServerSocket(PORT)) {
-      System.out.println("Server activated... " + s);
 
-      // クライアントからの接続要求を待つ
-      try (Socket socket = s.accept()) {
-        System.out.println("Established connection to Client... " + socket);
+    //関数の利用
+    Serverexp eva_server = new Serverexp();
+    ServerSocket serverSocket = null;
+    
+    //コマンドの名前とファイル名を一時保存するための文字列
+    String command_name;
+    String file_name;
 
-        // 入力ストリームを取得
-        InputStream is = socket.getInputStream();
+    try {
+      serverSocket = new ServerSocket(PORT);
+      System.out.println(serverSocket.getInetAddress());
+      System.out.println("Server activated... " + serverSocket);
+      while (true) {
+        command_name = eva_server.getcommandClient(serverSocket);
 
-        // ★受信ファイルを保存する
-        try (FileOutputStream fos = new FileOutputStream("received.txt")) {
-          byte[] buffer = new byte[1024];
-          int read;
-          while ((read = is.read(buffer)) != -1) {
-            fos.write(buffer, 0, read);
-          }
-        } 
+        switch (command_name) {
+          case "bye":
+            return;
+
+          case "send":
+            file_name = eva_server.getfilename(serverSocket);
+            eva_server.getfile(file_name, serverSocket);
+            break;
+          default:
+            System.out.println("waiting");
+            break;
+        }
       }
 
-      System.out.println("File Reception Successful...");
+
     } catch (IOException e) {
       e.printStackTrace();
     }
-
   }
 }
