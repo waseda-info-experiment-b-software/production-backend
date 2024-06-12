@@ -14,3 +14,15 @@ services:
     tty: true
     volumes:
       - ./frontend/front/src:/usr/src:cached
+  next-client:
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
+    ports:
+      - 12000:3000
+    volumes:
+      - ./app:/app
+      - node_modules:/app/node_modules
+    command: sh -c "npm run dev"
+volumes:
+  node_modules:
