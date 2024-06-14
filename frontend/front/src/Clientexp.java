@@ -1,7 +1,14 @@
 import java.io.*;
 import java.net.*;
 import java.util.zip.*;
+import java.nio.file.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Clientexp {
 
@@ -178,6 +185,90 @@ public class Clientexp {
 			e.printStackTrace();
 		}
     }
+
+    // ファイルの内容とファイル名をハッシュ化して出力するメソッド
+    public String hashFileContents(String fileName) {
+        try {
+            // ファイルの内容を読み込む
+            Path path = Paths.get(fileName);
+            byte[] fileBytes = Files.readAllBytes(path);
+            String fileContent = new String(fileBytes, StandardCharsets.UTF_8);
+
+            // ファイル名と内容を結合
+            String combined = fileName + fileContent;
+
+            // ハッシュ関数を使用してハッシュ値を計算
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            byte[] encodedhash = digest.digest(combined.getBytes(StandardCharsets.UTF_8));
+
+            // ハッシュ値を16進数の文字列に変換
+            StringBuilder hexString = new StringBuilder(2 * encodedhash.length);
+            for (int i = 0; i < encodedhash.length; i++) {
+                String hex = Integer.toHexString(0xff & encodedhash[i]);
+                if(hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+
+            // ハッシュ値を出力
+            //System.out.println("Hashed value: " + hexString.toString());
+            return hexString.toString();
+        } catch (IOException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return "";
+        }
+        
+    }
+
+    // ハッシュ値を基にディレクトリを作成し、ファイルをZIPで圧縮する
+    public void createDirectoryAndZipFile(String fileName) {
+        try {
+            String hashValue = hashFileContents(fileName);
+            if (hashValue == ""){
+                return;
+            }
+            String firstTwoChars = hashValue.substring(0, 2);
+            String remainingChars = hashValue.substring(2);
+
+            String directoryPath = "current/" + firstTwoChars + "/" + remainingChars;
+            Files.createDirectories(Paths.get(directoryPath));
+
+            String zipFilePath = directoryPath + "/" + fileName + ".zip";
+            try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFilePath));
+                 FileInputStream fis = new FileInputStream(fileName)) {
+                ZipEntry zipEntry = new ZipEntry(fileName);
+                zos.putNextEntry(zipEntry);
+
+                byte[] bytes = new byte[1024];
+                int length;
+                while ((length = fis.read(bytes)) >= 0) {
+                    zos.write(bytes, 0, length);
+                }
+                zos.closeEntry();
+            }
+            System.out.println("File zipped successfully at " + zipFilePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     
+    //あればよいかもという事で作りました。今いる階層のファイルとフォルダを取得するやつです
+    public void listFilesInDirectory() {
+        // 現在のディレクトリを取得
+        File folder = new File(System.getProperty("user.dir"));
+        File[] listOfFiles = folder.listFiles();
+    
+        System.out.println("Files and directories in the current directory:");
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                System.out.println("File: " + file.getName());
+            } else if (file.isDirectory()) {
+                System.out.println("Directory: " + file.getName());
+            }
+        }
+    }
+
 }
 
