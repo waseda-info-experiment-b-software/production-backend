@@ -1,7 +1,11 @@
+"use client";
+
+import { useWebsocket } from "@/hooks/useWebsocket";
+// import { WebSocketTest } from "@/features/WebSocketTest";
 import { FileTableView } from "features/FileTableView";
-import Image from "next/image";
 
 export default function Home() {
+  const { sendMessage } = useWebsocket("ws://localhost:8080");
   return (
     <main className="max-w-[768px] mx-auto">
       <div className="py-6">
@@ -9,12 +13,16 @@ export default function Home() {
           <div className="px-3 py-1 border border-solid border-gray-400 bg-gray-600 rounded-md">
             develop
           </div>
-          <button className="px-3 py-1 rounded-md border border-solid border-green-950 bg-green-700">
+          <button
+            onClick={() => sendMessage("a")}
+            className="px-3 py-1 rounded-md border border-solid border-green-950 bg-green-600"
+          >
             Code
           </button>
         </div>
         <FileTableView />
       </div>
+      {/* <WebSocketTest /> */}
     </main>
   );
 }
