@@ -60,6 +60,10 @@ public class FileSendClient {
 
                       break;
 
+                    case "cat-file":
+                      client.catFile(parts[2]);
+                      break;
+                      
                     case "hash-objects":
                       client.createDirectoryAndZipFile(parts[2]);
                       break;
