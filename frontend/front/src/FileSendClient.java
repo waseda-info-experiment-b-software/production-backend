@@ -60,6 +60,14 @@ public class FileSendClient {
 
                       break;
 
+                    case "hash-objects":
+                      client.createDirectoryAndZipFile(parts[2]);
+                      break;
+
+                    case "add":
+                      client.createDirectoryAndZipFile(parts[2]);
+                      break;
+
                     case "pull":
 
                       if(client.sendcommandServer(parts[1], serverIP, PORT)){

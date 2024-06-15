@@ -231,10 +231,10 @@ public class Clientexp {
             String firstTwoChars = hashValue.substring(0, 2);
             String remainingChars = hashValue.substring(2);
 
-            String directoryPath = "current/" + firstTwoChars + "/" + remainingChars;
+            String directoryPath = "current/" + firstTwoChars;
             Files.createDirectories(Paths.get(directoryPath));
 
-            String zipFilePath = directoryPath + "/" + fileName + ".zip";
+            String zipFilePath = directoryPath + "/" + remainingChars + ".zip";
             try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFilePath));
                  FileInputStream fis = new FileInputStream(fileName)) {
                 ZipEntry zipEntry = new ZipEntry(fileName);
@@ -242,6 +242,9 @@ public class Clientexp {
 
                 byte[] bytes = new byte[1024];
                 int length;
+                String header = "blob " + fileName.length() + "\0";
+                zos.write(header.getBytes());
+
                 while ((length = fis.read(bytes)) >= 0) {
                     zos.write(bytes, 0, length);
                 }
