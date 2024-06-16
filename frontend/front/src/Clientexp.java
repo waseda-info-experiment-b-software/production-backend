@@ -2,6 +2,12 @@ import java.io.*;
 import java.net.*;
 import java.util.zip.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Clientexp {
 
@@ -178,6 +184,173 @@ public class Clientexp {
 			e.printStackTrace();
 		}
     }
+
+    // ファイルの内容とファイル名をハッシュ化して出力するメソッド
+    public String hashFileContents(String fileName) {
+        try {
+            // ファイルの内容を読み込む
+            Path path = Paths.get(fileName);
+            byte[] fileBytes = Files.readAllBytes(path);
+            String fileContent = new String(fileBytes, StandardCharsets.UTF_8);
+
+            // ファイル名と内容を結合
+            String combined = fileName + fileContent;
+
+            // ハッシュ関数を使用してハッシュ値を計算
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            byte[] encodedhash = digest.digest(combined.getBytes(StandardCharsets.UTF_8));
+
+            // ハッシュ値を16進数の文字列に変換
+            StringBuilder hexString = new StringBuilder(2 * encodedhash.length);
+            for (int i = 0; i < encodedhash.length; i++) {
+                String hex = Integer.toHexString(0xff & encodedhash[i]);
+                if(hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+
+            // ハッシュ値を出力
+            //System.out.println("Hashed value: " + hexString.toString());
+            return hexString.toString();
+        } catch (IOException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return "";
+        }
+        
+    }
+
+    // ハッシュ値を基にディレクトリを作成し、ファイルをZIPで圧縮する
+    public void createDirectoryAndZipFile(String fileName) {
+        try {
+            String hashValue = hashFileContents(fileName);
+            if (hashValue == ""){
+                return;
+            }
+            String firstTwoChars = hashValue.substring(0, 2);
+            String remainingChars = hashValue.substring(2);
+
+            String directoryPath = "current/" + firstTwoChars;
+            Files.createDirectories(Paths.get(directoryPath));
+
+            String zipFilePath = directoryPath + "/" + remainingChars + ".zip";
+            try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFilePath));
+                 FileInputStream fis = new FileInputStream(fileName)) {
+                ZipEntry zipEntry = new ZipEntry(fileName);
+                zos.putNextEntry(zipEntry);
+
+                byte[] bytes = new byte[1024];
+                int length;
+
+                // ヘッダーを追加
+                String header = "blob " + fileName.length() + "\0";
+                zos.write(header.getBytes());
+
+                // ファイルの内容を追加
+                while ((length = fis.read(bytes)) >= 0) {
+                    zos.write(bytes, 0, length);
+                }
+                zos.closeEntry();
+            }
+            System.out.println("File zipped successfully at " + zipFilePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     
+    //あればよいかもという事で作りました。今いる階層のファイルとフォルダを取得するやつです
+    public void listFilesInDirectory() {
+        // 現在のディレクトリを取得
+        File folder = new File(System.getProperty("user.dir"));
+        File[] listOfFiles = folder.listFiles();
+    
+        System.out.println("Files and directories in the current directory:");
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                System.out.println("File: " + file.getName());
+            } else if (file.isDirectory()) {
+                System.out.println("Directory: " + file.getName());
+            }
+        }
+    }
+
+    // ファイルオブジェクト化(zip)したファイルオブジェクトの中身を見る
+    public void catFile(String blobHash) {
+        String fileName = "current/" + blobHash.substring(0, 2) + "/" + blobHash.substring(2) + ".zip";
+        
+        try (FileInputStream fis = new FileInputStream(fileName);
+             ZipInputStream zis = new ZipInputStream(fis)) {
+
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                if (!entry.isDirectory()) {
+                    // System.out.println("Reading file: " + entry.getName());
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        baos.write(buffer, 0, len);
+                    }
+
+                    // fileBytesにZipファイル内部の生のバイトデータが格納
+                    byte[] fileBytes = baos.toByteArray();
+                    // バイトデータを文字列に変換（UTF-8）
+                    String fileContent = new String(fileBytes, "UTF-8");
+
+                    // 文字列をヌル文字でわけ、最初がヘッダー、次が内容
+                    String[] splitContents = fileContent.split("\0", 2);
+
+                    // スプリットした内容を表示します
+                    System.out.println("Header  : " + splitContents[0]);
+                    System.out.println("Content : " + splitContents[1]);
+
+                    // 次のエントリに進む
+                    zis.closeEntry();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 内部的に、圧縮後のファイルの内容を読み込むメソッド
+    // public void unzipFileFromZip(String blobHash) {
+    //     try (FileInputStream fis = new FileInputStream("current/" + blobHash.substring(0, 2) + "/" + blobHash.substring(2) + ".zip");
+    //          ZipInputStream zis = new ZipInputStream(fis)) {
+
+    //         ZipEntry entry;
+    //         while ((entry = zis.getNextEntry()) != null) {
+    //             if (!entry.isDirectory()) {
+
+    //                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    //                 byte[] buffer = new byte[1024];
+    //                 int len;
+    //                 while ((len = zis.read(buffer)) > 0) {
+    //                     baos.write(buffer, 0, len);
+    //                 }
+
+    //                 // fileBytesにZipファイル内部の生のバイトデータが格納
+    //                 byte[] fileBytes = baos.toByteArray();
+                    
+    //                 // ヌル文字で切った後の「バイト列」を取得
+    //                 String[] splitContents = new String(fileBytes, "UTF-8").split("\0", 2);
+    //                 byte[] fileBytesContent = splitContents[1].getBytes("UTF-8");
+
+    //                 // ファイル名を取得
+                    
+    //                 try (OutputStream os = new FileOutputStream(blobHash.substring(2))) {
+    //                     os.write(fileBytesContent);
+    //                 }
+
+    //                 // 次のエントリに進む
+    //                 zis.closeEntry();
+    //             }
+    //         }
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 }
 
