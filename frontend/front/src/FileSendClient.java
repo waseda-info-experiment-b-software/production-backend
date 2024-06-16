@@ -63,7 +63,7 @@ public class FileSendClient {
                     case "cat-file":
                       client.catFile(parts[2]);
                       break;
-                      
+
                     case "hash-objects":
                       client.createDirectoryAndZipFile(parts[2]);
                       break;
@@ -84,6 +84,10 @@ public class FileSendClient {
                       break;
 
                     case "push":
+                      break;
+
+                    case "unzip":
+                      // client.unzipFileFromZip(parts[2]);
                       break;
                     
                     case "bye":

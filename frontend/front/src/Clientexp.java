@@ -314,5 +314,43 @@ public class Clientexp {
             e.printStackTrace();
         }
     }
+
+    // 内部的に、圧縮後のファイルの内容を読み込むメソッド
+    // public void unzipFileFromZip(String blobHash) {
+    //     try (FileInputStream fis = new FileInputStream("current/" + blobHash.substring(0, 2) + "/" + blobHash.substring(2) + ".zip");
+    //          ZipInputStream zis = new ZipInputStream(fis)) {
+
+    //         ZipEntry entry;
+    //         while ((entry = zis.getNextEntry()) != null) {
+    //             if (!entry.isDirectory()) {
+
+    //                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    //                 byte[] buffer = new byte[1024];
+    //                 int len;
+    //                 while ((len = zis.read(buffer)) > 0) {
+    //                     baos.write(buffer, 0, len);
+    //                 }
+
+    //                 // fileBytesにZipファイル内部の生のバイトデータが格納
+    //                 byte[] fileBytes = baos.toByteArray();
+                    
+    //                 // ヌル文字で切った後の「バイト列」を取得
+    //                 String[] splitContents = new String(fileBytes, "UTF-8").split("\0", 2);
+    //                 byte[] fileBytesContent = splitContents[1].getBytes("UTF-8");
+
+    //                 // ファイル名を取得
+                    
+    //                 try (OutputStream os = new FileOutputStream(blobHash.substring(2))) {
+    //                     os.write(fileBytesContent);
+    //                 }
+
+    //                 // 次のエントリに進む
+    //                 zis.closeEntry();
+    //             }
+    //         }
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 }
 
