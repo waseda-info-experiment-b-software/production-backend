@@ -242,9 +242,12 @@ public class Clientexp {
 
                 byte[] bytes = new byte[1024];
                 int length;
+
+                // ヘッダーを追加
                 String header = "blob " + fileName.length() + "\0";
                 zos.write(header.getBytes());
 
+                // ファイルの内容を追加
                 while ((length = fis.read(bytes)) >= 0) {
                     zos.write(bytes, 0, length);
                 }
