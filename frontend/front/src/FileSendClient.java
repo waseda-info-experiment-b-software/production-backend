@@ -68,6 +68,10 @@ public class FileSendClient {
                       client.createDirectoryAndZipFile(parts[2]);
                       break;
 
+                    case "tree-hash":
+                      System.out.println(client.createTreeHash(parts[2]));
+                      break;
+
                     case "add":
                       client.createDirectoryAndZipFile(parts[2]);
                       break;

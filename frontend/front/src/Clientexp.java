@@ -186,7 +186,7 @@ public class Clientexp {
     }
 
     // ファイルの内容とファイル名をハッシュ化して出力するメソッド
-    public String hashFileContents(String fileName) {
+    public String createBlobHash(String fileName) {
         try {
             // ファイルの内容を読み込む
             Path path = Paths.get(fileName);
@@ -223,7 +223,7 @@ public class Clientexp {
     // ハッシュ値を基にディレクトリを作成し、ファイルをZIPで圧縮する
     public void createDirectoryAndZipFile(String fileName) {
         try {
-            String hashValue = hashFileContents(fileName);
+            String hashValue = createBlobHash(fileName);
             if (hashValue == ""){
                 return;
             }
@@ -243,8 +243,8 @@ public class Clientexp {
                 int length;
 
                 // ヘッダーを追加
-                String header = "blob " + fileName.length() + "\0";
-                zos.write(header.getBytes());
+                String header = "blob" + "\0";
+                zos.write(header.getBytes("UTF-8"));
 
                 // ファイルの内容を追加
                 while ((length = fis.read(bytes)) >= 0) {
@@ -352,5 +352,62 @@ public class Clientexp {
     //         e.printStackTrace();
     //     }
     // }
+
+    // Treeオブジェクトの作成
+    // public void createTreeObject(String folderPath) {
+    //     try {
+    //         // フォルダ内のファイルを取得
+    //         File folder = new File(folderPath);
+    //         File[] listOfFiles = folder.listFiles();
+
+    //         // Treeオブジェクトの作成
+    //         StringBuilder treeObject = new StringBuilder();
+    //         for (File file : listOfFiles) {
+    //             if (file.isFile()) {
+    //                 // ファイルのハッシュ値を取得
+    //                 String hashValue = createBlobHash(file.getName());
+    //                 treeObject.append("blob " + hashValue + " " + file.getName() + "\n");
+    //             } else if (file.isDirectory()) {
+    //                 // フォルダのハッシュ値を取得
+    //                 String hashValue = createBlobHash(file.getName());
+    //                 treeObject.append("tree " + hashValue + " " + file.getName() + "\n");
+    //             }
+    //         }
+
+    //         // Treeオブジェクトをファイルに書き込む
+    //         String treeFileName = "current/tree.txt";
+    //         try (FileWriter writer = new FileWriter(treeFileName)) {
+    //             writer.write(treeObject.toString());
+    //         }
+
+    //         System.out.println("Tree object created successfully at " + treeFileName);
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
+    public String createTreeHash(String filePath) {
+        // filePathから、フォルダ内のファイルのリストを取得
+        File folder = new File(filePath);
+        File[] listOfFiles = folder.listFiles();
+
+        // Treeオブジェクトの作成
+        // もし、ファイル単体なら、Blobオブジェクトを作成
+        // もし、フォルダなら、再帰的にTreeオブジェクトを作成
+        StringBuilder treeObject = new StringBuilder();
+        treeObject.append("tree ");
+
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                // ファイルのハッシュ値を取得
+                String hashValue = createBlobHash(file.getPath());
+                treeObject.append("blob " + hashValue + "\0" + file.getName() + "\n");
+            } else if (file.isDirectory()) {
+                // フォルダのハッシュ値を取得
+                String hashValue = createTreeHash(file.getPath());
+                treeObject.append("tree " + hashValue + "\0" + file.getName() + "\n");
+            }
+        }
+        return treeObject.toString();
+    }   
 }
 
