@@ -220,30 +220,38 @@ public class Clientexp {
         
     }
 
-    // ハッシュ値を基にディレクトリを作成し、ファイルをZIPで圧縮する
-    public void createDirectoryAndZipFile(String fileName) {
+    /**
+     * ハッシュ値を基にディレクトリを作成し、ファイルをZIPで圧縮する
+     * 
+     * @param filePath ファイルのパス
+     */
+    public void createDirectoryAndZipFile(String filePath) {
         try {
-            String hashValue = createBlobHash(fileName);
-            if (hashValue == ""){
+            // ファイルパスをあげて、その中身からSHA-1ハッシュを取得
+            String hashValue = createBlobHash(filePath);
+            if (hashValue == "") {
                 return;
             }
             String firstTwoChars = hashValue.substring(0, 2);
             String remainingChars = hashValue.substring(2);
 
             String directoryPath = "current/" + firstTwoChars;
-            Files.createDirectories(Paths.get(directoryPath));
+            Path path = Paths.get(directoryPath);
+            Files.createDirectories(path);
+
+            long fileSize = Files.walk(path).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
 
             String zipFilePath = directoryPath + "/" + remainingChars + ".zip";
             try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFilePath));
-                 FileInputStream fis = new FileInputStream(fileName)) {
-                ZipEntry zipEntry = new ZipEntry(fileName);
+                 FileInputStream fis = new FileInputStream(filePath)) {
+                ZipEntry zipEntry = new ZipEntry(filePath);
                 zos.putNextEntry(zipEntry);
 
                 byte[] bytes = new byte[1024];
                 int length;
 
                 // ヘッダーを追加
-                String header = "blob" + "\0";
+                String header = "blob " + fileSize + "\0";
                 zos.write(header.getBytes("UTF-8"));
 
                 // ファイルの内容を追加
