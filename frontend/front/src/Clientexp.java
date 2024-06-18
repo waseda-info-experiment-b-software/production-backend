@@ -261,6 +261,8 @@ public class Clientexp {
             // もし、フォルダなら、再帰的にTreeオブジェクトを作成
             StringBuilder treeObject = new StringBuilder();
             treeObject.append("tree ");
+            treeObject.append(folder.length());
+            treeObject.append("\0");
 
             for (File file : listOfFiles) {
                 System.out.println(file.getName());
@@ -329,7 +331,7 @@ public class Clientexp {
             String firstTwoChars = hashValue.substring(0, 2);
             String remainingChars = hashValue.substring(2);
 
-            String directoryPath = "current/" + firstTwoChars;
+            String directoryPath = "current/objects/" + firstTwoChars;
             Path path = Paths.get(directoryPath);
             Files.createDirectories(path);
 
@@ -379,7 +381,7 @@ public class Clientexp {
 
     // ファイルオブジェクト化(zip)したファイルオブジェクトの中身を見る
     public void catFile(String blobHash) {
-        String fileName = "current/" + blobHash.substring(0, 2) + "/" + blobHash.substring(2) + ".zip";
+        String fileName = "current/objects/" + blobHash.substring(0, 2) + "/" + blobHash.substring(2) + ".zip";
         
         try (FileInputStream fis = new FileInputStream(fileName);
              ZipInputStream zis = new ZipInputStream(fis)) {
