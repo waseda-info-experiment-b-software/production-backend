@@ -185,20 +185,37 @@ public class Clientexp {
 		}
     }
 
-    // ファイルの内容とファイル名をハッシュ化して出力するメソッド
-    public String createBlobHash(String fileName) {
+    /**
+     * ファイルの内容からSHA-1ハッシュ値を計算
+     * @param fileContent ファイルの内容
+     * @return ハッシュ値
+     */
+    public String createBlobHashString(byte[] fileContent) {
         try {
-            // ファイルの内容を読み込む
-            Path path = Paths.get(fileName);
-            byte[] fileBytes = Files.readAllBytes(path);
-            String fileContent = new String(fileBytes, StandardCharsets.UTF_8);
-
-            // ファイル名と内容を結合
-            String combined = fileName + fileContent;
-
             // ハッシュ関数を使用してハッシュ値を計算
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
-            byte[] encodedhash = digest.digest(combined.getBytes(StandardCharsets.UTF_8));
+
+            // System.out.println("fileContent:" + fileContent);
+            // System.out.println("length:" + fileContent.length);
+
+            // ヘッダーを計算
+            StringBuilder sb = new StringBuilder();
+            sb.append("blob ");
+            sb.append(String.valueOf(fileContent.length));
+            sb.append("\0");
+            
+            String header = sb.toString();
+            byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
+
+            // ヘッダーとファイルの内容を結合
+            byte[] rawBytes = new byte[headerBytes.length + fileContent.length];
+            System.arraycopy(headerBytes, 0, rawBytes, 0, headerBytes.length);
+
+            // DEBUG: バイト列を表示
+            System.out.println("byte string: " + rawBytes.toString());
+            
+            // その生バイト列をSHA-1でハッシュ化
+            byte[] encodedhash = digest.digest(rawBytes);
 
             // ハッシュ値を16進数の文字列に変換
             StringBuilder hexString = new StringBuilder(2 * encodedhash.length);
@@ -211,27 +228,32 @@ public class Clientexp {
             }
 
             // ハッシュ値を出力
-            //System.out.println("Hashed value: " + hexString.toString());
             return hexString.toString();
-        } catch (IOException | NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return "";
         }
-        
     }
 
     /**
-     * ハッシュ値を基にディレクトリを作成し、ファイルをZIPで圧縮する
+     * ハッシュ値を基にディレクトリを作成し、ZIPで圧縮したファイルオブジェクトを作成
      * 
      * @param filePath ファイルのパス
      */
     public void createDirectoryAndZipFile(String filePath) {
         try {
-            // ファイルパスをあげて、その中身からSHA-1ハッシュを取得
-            String hashValue = createBlobHash(filePath);
+            // 当該ファイルのパスと、中身についてバイトデータで取得
+            Path fPath = Paths.get(filePath);
+            byte[] fileBytes = Files.readAllBytes(fPath);
+
+            // ファイル中身をあげて、その中身からSHA-1ハッシュを取得
+            String hashValue = createBlobHashString(fileBytes);
+            System.out.println("Hash value: " + hashValue);
             if (hashValue == "") {
                 return;
             }
+
+            // ハッシュの先頭2文字をディレクトリ名、残りをファイル名とするため分割
             String firstTwoChars = hashValue.substring(0, 2);
             String remainingChars = hashValue.substring(2);
 
@@ -323,76 +345,6 @@ public class Clientexp {
         }
     }
 
-    // 内部的に、圧縮後のファイルの内容を読み込むメソッド
-    // public void unzipFileFromZip(String blobHash) {
-    //     try (FileInputStream fis = new FileInputStream("current/" + blobHash.substring(0, 2) + "/" + blobHash.substring(2) + ".zip");
-    //          ZipInputStream zis = new ZipInputStream(fis)) {
-
-    //         ZipEntry entry;
-    //         while ((entry = zis.getNextEntry()) != null) {
-    //             if (!entry.isDirectory()) {
-
-    //                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    //                 byte[] buffer = new byte[1024];
-    //                 int len;
-    //                 while ((len = zis.read(buffer)) > 0) {
-    //                     baos.write(buffer, 0, len);
-    //                 }
-
-    //                 // fileBytesにZipファイル内部の生のバイトデータが格納
-    //                 byte[] fileBytes = baos.toByteArray();
-                    
-    //                 // ヌル文字で切った後の「バイト列」を取得
-    //                 String[] splitContents = new String(fileBytes, "UTF-8").split("\0", 2);
-    //                 byte[] fileBytesContent = splitContents[1].getBytes("UTF-8");
-
-    //                 // ファイル名を取得
-                    
-    //                 try (OutputStream os = new FileOutputStream(blobHash.substring(2))) {
-    //                     os.write(fileBytesContent);
-    //                 }
-
-    //                 // 次のエントリに進む
-    //                 zis.closeEntry();
-    //             }
-    //         }
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
-
-    // Treeオブジェクトの作成
-    // public void createTreeObject(String folderPath) {
-    //     try {
-    //         // フォルダ内のファイルを取得
-    //         File folder = new File(folderPath);
-    //         File[] listOfFiles = folder.listFiles();
-
-    //         // Treeオブジェクトの作成
-    //         StringBuilder treeObject = new StringBuilder();
-    //         for (File file : listOfFiles) {
-    //             if (file.isFile()) {
-    //                 // ファイルのハッシュ値を取得
-    //                 String hashValue = createBlobHash(file.getName());
-    //                 treeObject.append("blob " + hashValue + " " + file.getName() + "\n");
-    //             } else if (file.isDirectory()) {
-    //                 // フォルダのハッシュ値を取得
-    //                 String hashValue = createBlobHash(file.getName());
-    //                 treeObject.append("tree " + hashValue + " " + file.getName() + "\n");
-    //             }
-    //         }
-
-    //         // Treeオブジェクトをファイルに書き込む
-    //         String treeFileName = "current/tree.txt";
-    //         try (FileWriter writer = new FileWriter(treeFileName)) {
-    //             writer.write(treeObject.toString());
-    //         }
-
-    //         System.out.println("Tree object created successfully at " + treeFileName);
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
     public String createTreeHash(String filePath) {
         // filePathから、フォルダ内のファイルのリストを取得
         File folder = new File(filePath);
@@ -407,8 +359,17 @@ public class Clientexp {
         for (File file : listOfFiles) {
             if (file.isFile()) {
                 // ファイルのハッシュ値を取得
-                String hashValue = createBlobHash(file.getPath());
-                treeObject.append("blob " + hashValue + "\0" + file.getName() + "\n");
+                try {
+                    // ファイルの内容をバイトデータで取得
+                    Path fPath = Paths.get(filePath);
+                    byte[] fileBytes = Files.readAllBytes(fPath);
+
+                    // ファイル中身をあげて、その中身からSHA-1ハッシュを取得
+                    String hashValue = createBlobHashString(fileBytes);
+                    treeObject.append("blob " + hashValue + "\0" + file.getName() + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } else if (file.isDirectory()) {
                 // フォルダのハッシュ値を取得
                 String hashValue = createTreeHash(file.getPath());
