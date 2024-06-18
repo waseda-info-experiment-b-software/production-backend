@@ -185,6 +185,28 @@ public class Clientexp {
 		}
     }
 
+
+    /**
+     * blob ファイルバイト数 \0 ファイルの内容 という形式の生バイト列を作成
+     * @param fileContent ファイルの内容のバイト列
+     * @return バイト列
+     */
+    public byte[] createBlobRawBytes(byte[] fileContent) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("blob ");
+        sb.append(String.valueOf(fileContent.length));
+        sb.append("\0");
+        String header = sb.toString();
+        byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
+
+        // ヘッダーとファイルの内容を結合
+        byte[] rawBytes = new byte[headerBytes.length + fileContent.length];
+        System.arraycopy(headerBytes, 0, rawBytes, 0, headerBytes.length);
+        System.arraycopy(fileContent, 0, rawBytes, headerBytes.length, fileContent.length);
+
+        return rawBytes;
+    }
+
     /**
      * ファイルの内容からSHA-1ハッシュ値を計算
      * @param fileContent ファイルの内容
@@ -195,27 +217,8 @@ public class Clientexp {
             // ハッシュ関数を使用してハッシュ値を計算
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
 
-            // System.out.println("fileContent:" + fileContent);
-            // System.out.println("length:" + fileContent.length);
-
-            // ヘッダーを計算
-            StringBuilder sb = new StringBuilder();
-            sb.append("blob ");
-            sb.append(String.valueOf(fileContent.length));
-            sb.append("\0");
-            
-            String header = sb.toString();
-            byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
-
-            // ヘッダーとファイルの内容を結合
-            byte[] rawBytes = new byte[headerBytes.length + fileContent.length];
-            System.arraycopy(headerBytes, 0, rawBytes, 0, headerBytes.length);
-
-            // DEBUG: バイト列を表示
-            System.out.println("byte string: " + rawBytes.toString());
-            
             // その生バイト列をSHA-1でハッシュ化
-            byte[] encodedhash = digest.digest(rawBytes);
+            byte[] encodedhash = digest.digest(createBlobRawBytes(fileContent));
 
             // ハッシュ値を16進数の文字列に変換
             StringBuilder hexString = new StringBuilder(2 * encodedhash.length);
@@ -345,38 +348,46 @@ public class Clientexp {
         }
     }
 
-    public String createTreeHash(String filePath) {
-        // filePathから、フォルダ内のファイルのリストを取得
-        File folder = new File(filePath);
-        File[] listOfFiles = folder.listFiles();
+    public String createTreeHashString(String filePath) {
+        // try {
+            // SHA-1ハッシュを計算するためのインスタンスを生成
+            // MessageDigest digest = MessageDigest.getInstance("SHA-1");
 
-        // Treeオブジェクトの作成
-        // もし、ファイル単体なら、Blobオブジェクトを作成
-        // もし、フォルダなら、再帰的にTreeオブジェクトを作成
-        StringBuilder treeObject = new StringBuilder();
-        treeObject.append("tree ");
+            // filePathから、フォルダ内のファイルのリストを取得
+            File folder = new File(filePath);
+            File[] listOfFiles = folder.listFiles();
 
-        for (File file : listOfFiles) {
-            if (file.isFile()) {
-                // ファイルのハッシュ値を取得
-                try {
-                    // ファイルの内容をバイトデータで取得
-                    Path fPath = Paths.get(filePath);
-                    byte[] fileBytes = Files.readAllBytes(fPath);
+            // Treeオブジェクトの作成
+            // もし、ファイル単体なら、Blobオブジェクトを作成
+            // もし、フォルダなら、再帰的にTreeオブジェクトを作成
+            StringBuilder treeObject = new StringBuilder();
+            treeObject.append("tree ");
 
-                    // ファイル中身をあげて、その中身からSHA-1ハッシュを取得
-                    String hashValue = createBlobHashString(fileBytes);
-                    treeObject.append("blob " + hashValue + "\0" + file.getName() + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
+            for (File file : listOfFiles) {
+                if (file.isFile()) {
+                    // ファイルのハッシュ値を取得
+                    try {
+                        // ファイルの内容をバイトデータで取得
+                        Path fPath = Paths.get(filePath);
+                        byte[] fileBytes = Files.readAllBytes(fPath);
+
+                        // ファイル中身をあげて、その中身からSHA-1ハッシュを取得
+                        String hashValue = createBlobHashString(fileBytes);
+                        treeObject.append("blob " + hashValue + "\0" + file.getName() + "\n");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (file.isDirectory()) {
+                    // フォルダのハッシュ値を取得
+                    String hashValue = createTreeHashString(file.getPath());
+                    treeObject.append("tree " + hashValue + "\0" + file.getName() + "\n");
                 }
-            } else if (file.isDirectory()) {
-                // フォルダのハッシュ値を取得
-                String hashValue = createTreeHash(file.getPath());
-                treeObject.append("tree " + hashValue + "\0" + file.getName() + "\n");
             }
-        }
-        return treeObject.toString();
+            
+            return treeObject.toString();
+        // } catch (NoSuchAlgorithmException e) {
+        //     e.printStackTrace();
+        // }
     }   
 }
 

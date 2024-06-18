@@ -69,7 +69,7 @@ public class FileSendClient {
                       break;
 
                     case "tree-hash":
-                      System.out.println(client.createTreeHash(parts[2]));
+                      System.out.println(client.createTreeHashString(parts[2]));
                       break;
 
                     case "add":
