@@ -185,16 +185,16 @@ public class Clientexp {
 		}
     }
 
-
     /**
      * blob ファイルバイト数 \0 ファイルの内容 という形式の生バイト列を作成
+     * @param fileSize ファイルサイズ
      * @param fileContent ファイルの内容のバイト列
      * @return バイト列
      */
-    public byte[] createBlobRawBytes(byte[] fileContent) {
+    public byte[] createBlobRawBytes(long fileSize, byte[] fileContent) {
         StringBuilder sb = new StringBuilder();
         sb.append("blob ");
-        sb.append(String.valueOf(fileContent.length));
+        sb.append(fileSize);
         sb.append("\0");
         String header = sb.toString();
         byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
@@ -212,13 +212,13 @@ public class Clientexp {
      * @param fileContent ファイルの内容
      * @return ハッシュ値
      */
-    public String createBlobHashString(byte[] fileContent) {
+    public String createBlobHashString(long fileSize, byte[] fileContent) {
         try {
             // ハッシュ関数を使用してハッシュ値を計算
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
 
             // その生バイト列をSHA-1でハッシュ化
-            byte[] encodedhash = digest.digest(createBlobRawBytes(fileContent));
+            byte[] encodedhash = digest.digest(createBlobRawBytes(fileSize, fileContent));
 
             // ハッシュ値を16進数の文字列に変換
             StringBuilder hexString = new StringBuilder(2 * encodedhash.length);
@@ -272,9 +272,9 @@ public class Clientexp {
                         // ファイルの内容をバイトデータで取得
                         Path fPath = Paths.get(file.getPath());
                         byte[] fileBytes = Files.readAllBytes(fPath);
-
+                        long fileSize = Files.walk(fPath).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
                         // ファイル中身をあげて、その中身からSHA-1ハッシュを取得
-                        String hashValue = createBlobHashString(fileBytes);
+                        String hashValue = createBlobHashString(fileSize, fileBytes);
                         treeObject.append("00" + file.getName() + "\0" + hashValue + "\0\0");
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -318,10 +318,11 @@ public class Clientexp {
         try {
             // 当該ファイルのパスと、中身についてバイトデータで取得
             Path fPath = Paths.get(filePath);
+            long fileSize = Files.walk(fPath).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
             byte[] fileBytes = Files.readAllBytes(fPath);
 
             // ファイル中身をあげて、その中身からSHA-1ハッシュを取得
-            String hashValue = createBlobHashString(fileBytes);
+            String hashValue = createBlobHashString(fileSize, fileBytes);
             System.out.println("Hash value: " + hashValue);
             if (hashValue == "") {
                 return;
@@ -334,8 +335,6 @@ public class Clientexp {
             String directoryPath = "current/objects/" + firstTwoChars;
             Path path = Paths.get(directoryPath);
             Files.createDirectories(path);
-
-            long fileSize = Files.walk(path).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
 
             String zipFilePath = directoryPath + "/" + remainingChars + ".zip";
             try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFilePath));
@@ -419,6 +418,5 @@ public class Clientexp {
         }
     }
 
-    
 }
 
