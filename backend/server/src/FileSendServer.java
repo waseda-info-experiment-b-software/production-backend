@@ -13,6 +13,10 @@ public class FileSendServer {
     String command_name;
     String file_name;
 
+    String username;
+    String Email;
+
+  
    try {
       //サーバーの起動
       serverSocket = new ServerSocket(PORT);
@@ -20,13 +24,25 @@ public class FileSendServer {
       System.out.println("Server activated... " + serverSocket);
       while (true) {
         command_name = eva_server.getcommandClient(serverSocket);
-
         switch (command_name) {
           //終了
           case "bye":
             serverSocket.close();
             System.out.println("Server closed...");
             return;
+
+          //認証
+          case "config-check":
+            System.out.println("get config");
+            username = eva_server.getfilename(serverSocket);
+            Email = eva_server.getfilename(serverSocket);
+            if (eva_server.checkUserExists(username, Email)) {
+                eva_server.sendMessageToClient("OK", serverSocket);
+            } else {
+                eva_server.sendMessageToClient("Fail", serverSocket);
+            }
+            break;
+
 
           //送る
           case "send":
