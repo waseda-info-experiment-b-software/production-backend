@@ -31,7 +31,7 @@ public class FileSendServer {
             System.out.println("Server closed...");
             return;
 
-          //認証
+          //認証、クライアント側にあるconfigの中身がcsvファイル内にあればOK、なければFailを送る
           case "config-check":
             System.out.println("get config");
             username = eva_server.getfilename(serverSocket);

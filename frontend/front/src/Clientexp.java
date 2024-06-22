@@ -137,7 +137,33 @@ public class Clientexp {
         System.out.println("Config saved.");
     }
     
-    // クライアントのconfigがサーバーに登録されているか確認する関数です
+    // .config/config.txtの中身を表示する
+    public void viewConfigFileContent() {
+        File configFile = new File(".config/config.txt");
+        try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+            String line;
+            int number = 0;
+            while ((line = reader.readLine()) != null) {
+                if ( number == 0 ){
+                    System.out.print("Username:");
+                }else{
+                    System.out.print("Email   :");
+                }
+                System.out.println(line);
+                number++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * サーバーにユーザー、メールアドレスが登録されているか確認するための関数
+     * .config/config.txtにあるので引数はIPアドレスとポートのみ
+     * @param serverIP, PORT →IPアドレスとポート番号
+     * @return　文字列(サーバーとやり取りできるならサーバーの返信、なければ"no config"もしくは"not")
+     * 
+     */
     public String handleConfigCheck(InetAddress serverIP, int PORT) {
         File checkConfigFile = new File(".config/config.txt");
         if (!checkConfigFile.exists()) {

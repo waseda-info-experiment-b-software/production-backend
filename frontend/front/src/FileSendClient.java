@@ -32,10 +32,15 @@ public class FileSendClient {
 
                   switch (parts[1]) {
                     
+                    //.config/config.txtの編集
                     case "config":
                       client.handleConfig(scanner);
                       break;
 
+                    case "config-look":
+                      client.viewConfigFileContent();
+                      break;
+                    //サーバーに登録されているかチェックする
                     case "config-check":
                       String message;
                       message = client.handleConfigCheck(serverIP, PORT);

@@ -13,6 +13,7 @@ public class Serverexp {
 
     }
 
+    //csvファイルに特定のユーザー名とメールアドレスがいるかのチェック
     public boolean checkUserExists(String username, String email) {
         try (BufferedReader br = new BufferedReader(new FileReader("users.csv"))) {
             String line;

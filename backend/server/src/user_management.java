@@ -6,6 +6,9 @@ import java.util.Scanner;
 public class user_management {
     private static final String CSV_FILE = "users.csv";
 
+
+    //csvファイルにユーザー、パスワード、メールを追加するための関数
+    //ユーザー、メールアドレスがすでに存在していれば追加できないようになっている。
     public void addUserToCsv(String username, String password, String email) {
         if (userExists(username, email)) {
             System.out.println("Error: Username or Email already exists.");
@@ -19,7 +22,7 @@ public class user_management {
             e.printStackTrace();
         }
     }
-
+    //今あるcsvファイルの中身を見るための関数。この時にユーザーとメールアドレスのみ見ることができる
     public void readUsersFromCsv() {
         try (BufferedReader br = new BufferedReader(new FileReader(CSV_FILE))) {
             String line;
@@ -32,6 +35,7 @@ public class user_management {
         }
     }
 
+    //csvファイルにあるデータを削除するための関数。ユーザーとメールアドレスとパスワードを入力して消す
     public void removeUserFromCsv(String username, String email, String password) {
         List<String> users = new ArrayList<>();
         boolean found = false;
@@ -63,6 +67,9 @@ public class user_management {
         }
     }
 
+
+    //csvファイルにユーザーがいるかどうかを確かめるための関数
+    //addするときに必要なので作成した
     private boolean userExists(String username, String email) {
         try (BufferedReader br = new BufferedReader(new FileReader(CSV_FILE))) {
             String line;
@@ -78,6 +85,15 @@ public class user_management {
         return false;
     }
 
+    /*
+     * 実行をここで行う。行える動作として4つある
+     * 
+     * add    (ファイルにユーザー、パスワード、メールアドレスの順で登録する。ユーザー、メールアドレスにかぶりがあるなら追加しない)
+     * look   (ファイルの内容を見るためのものただし、パスワードは表示されない)
+     * remove (ファイルの登録されている情報を削除するもの。ユーザー、メールアドレス、パスワードを聞かれ、合っていたら削除をする)
+     * bye    (実行を終了する)
+     * 
+     */
     public static void main(String[] args) {
         user_management manager = new user_management();
         Scanner scanner = new Scanner(System.in);
