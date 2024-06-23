@@ -45,10 +45,10 @@ public abstract class FileObject {
   /**
    * ファイルオブジェクトをファイルに書き出す。
    * ファイル名はハッシュ値とする。
-   * ファイルの書き出し先は、current/objects/ハッシュ値の先頭2文字/ハッシュ値の残りの部分
+   * ファイルの書き出し先は、.mogit/objects/ハッシュ値の先頭2文字/ハッシュ値の残りの部分
    * 
    * 例: ハッシュ値が"0123456789abcdef0123456789abcdef01234567"の場合
-   * current/objects/01/23456789abcdef0123456789abcdef01234567
+   * .mogit/objects/01/23456789abcdef0123456789abcdef01234567
    */
   void writeToFile() {
     byte[] rawBytes = createRawBytes();
