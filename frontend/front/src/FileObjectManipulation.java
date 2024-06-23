@@ -55,7 +55,7 @@ public class FileObjectManipulation {
         return fileData;
     }
 
-  static byte[] decompressData(String filePath) throws DataFormatException {
+  public static byte[] decompressData(String filePath) throws DataFormatException {
     byte[] data;
     try {
       data = readFile(filePath);

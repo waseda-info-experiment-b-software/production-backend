@@ -6,6 +6,8 @@ public class FileSendClient {
   final static int PORT = 8080;
   public static void main(String[] args) {
     Clientexp client = new Clientexp();
+    MogitInit init = new MogitInit();
+    CatFileObject cat = new CatFileObject();
     String branch = "main";
     Scanner scanner = new Scanner(System.in);
     String input;
@@ -60,8 +62,11 @@ public class FileSendClient {
 
                       break;
 
+                    case "init":
+                      init.init();
+                      break;
                     case "cat-file":
-                      client.catFile(parts[2]);
+                      cat.catFile(parts[2]);
                       break;
 
                     case "hash-objects":

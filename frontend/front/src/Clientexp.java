@@ -332,7 +332,7 @@ public class Clientexp {
             String firstTwoChars = hashValue.substring(0, 2);
             String remainingChars = hashValue.substring(2);
 
-            String directoryPath = "current/objects/" + firstTwoChars;
+            String directoryPath = ".mogit/objects/" + firstTwoChars;
             Path path = Paths.get(directoryPath);
             Files.createDirectories(path);
 
@@ -377,46 +377,5 @@ public class Clientexp {
             }
         }
     }
-
-    // ファイルオブジェクト化(zip)したファイルオブジェクトの中身を見る
-    public void catFile(String blobHash) {
-        String fileName = "current/objects/" + blobHash.substring(0, 2) + "/" + blobHash.substring(2) + ".zip";
-        
-        try (FileInputStream fis = new FileInputStream(fileName);
-             ZipInputStream zis = new ZipInputStream(fis)) {
-
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                if (!entry.isDirectory()) {
-                    // System.out.println("Reading file: " + entry.getName());
-
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    byte[] buffer = new byte[1024];
-                    int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        baos.write(buffer, 0, len);
-                    }
-
-                    // fileBytesにZipファイル内部の生のバイトデータが格納
-                    byte[] fileBytes = baos.toByteArray();
-                    // バイトデータを文字列に変換（UTF-8）
-                    String fileContent = new String(fileBytes, "UTF-8");
-
-                    // 文字列をヌル文字でわけ、最初がヘッダー、次が内容
-                    String[] splitContents = fileContent.split("\0", 2);
-
-                    // スプリットした内容を表示します
-                    System.out.println("Header  : " + splitContents[0]);
-                    System.out.println("Content : " + splitContents[1]);
-
-                    // 次のエントリに進む
-                    zis.closeEntry();
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }
 
