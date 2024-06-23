@@ -28,17 +28,32 @@ public class FileSendClient {
                   String[] parts = input.split(" ");
 
                   switch (parts[1]) {
+
+                    case "init":
+
+                      if(client.sendcommandServer(parts[1], serverIP, PORT)){
+                        
+                          System.out.println("sent files");
+                        }else{
+                          System.out.println("cannot connect to server");
+                        }
+
+                      break;
+
                     // ここではファイルを送っている
                     //ファイルが存在しなければ送らない(サーバー側に空のファイルができちゃうので)
                     case "send":
 
                       
-                      if (!client.checkFileExists(client.getCurrentPath(), parts[2])){
+                      if (!client.checkFileExists(client.getCurrentPath(), parts[3])){
                         System.out.println("cannot find such files");
                       }else{
                         if(client.sendcommandServer(parts[1], serverIP, PORT)){
+                          //ディレクトリ名をまず送る
                           client.sendFilenameToServer(parts[2], serverIP, PORT);
-                          client.sendFileToServer(parts[2], serverIP, PORT);
+                          //次にファイル名を送る
+                          client.sendFilenameToServer(parts[3], serverIP, PORT);
+                          client.sendFileToServer(parts[3], serverIP, PORT);
                           System.out.println("sent files");
                         }else{
                           System.out.println("cannot connect to server");
@@ -46,20 +61,23 @@ public class FileSendClient {
 
                       }
                       break;
-                  
 
                     //ファイル名を指定してダウンロード
                     case "get":
 
                       if(client.sendcommandServer(parts[1], serverIP, PORT)){
+                        //ディレクトリ名を送る
                         client.sendFilenameToServer(parts[2], serverIP, PORT);
-                        client.receiveFileFromServer(parts[2], serverIP, PORT);
+                        //ファイル名を送る
+                        client.sendFilenameToServer(parts[3], serverIP, PORT);
+                        client.receiveFileFromServer(client.getCurrentPath(), parts[3], serverIP, PORT);
                       }else{
                         System.out.println("cannot connect to server");
                       }
 
                       break;
 
+                    // mogit系のコマンド群
                     case "cat-file":
                       client.catFile(parts[2]);
                       break;
@@ -77,14 +95,11 @@ public class FileSendClient {
                       break;
 
                     case "pull":
-
                       if(client.sendcommandServer(parts[1], serverIP, PORT)){
-                        client.receiveFolderFromServer(serverIP, PORT);
-                        client.unzipFolder("/usr/src/result.zip");
+                        client.receiveFileFromServer(client.getCurrentPath(), "current", serverIP, PORT);
                       }else{
                         System.out.println("cannot connect to server");
                       }                     
-
                       break;
 
                     case "push":
