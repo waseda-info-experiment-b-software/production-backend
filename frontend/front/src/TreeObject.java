@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class TreeObject extends FileObject {
-  byte[] content;
   Path path;
   long size;
   // そのディレクトリが持つ「ファイル」や「ディレクトリ」のファイルオブジェクトのリスト
@@ -16,6 +15,10 @@ public class TreeObject extends FileObject {
   TreeObject(Path path, long size) {
     this.path = path;
     this.size = size;
+  }
+
+  Path getPath() {
+    return this.path;
   }
 
   byte[] createRawBytes() {
@@ -35,9 +38,9 @@ public class TreeObject extends FileObject {
     for (File file : listOfFiles) {
       try {
         Path fpath = Paths.get(file.getPath());
-        byte[] content = Files.readAllBytes(fpath);
         long fileSize = Files.walk(fpath).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
         if (file.isFile()) {
+          byte[] content = Files.readAllBytes(fpath);
           BlobObject blob = new BlobObject(content, fpath, fileSize);
           children.add(blob);
           sb.append("00");
