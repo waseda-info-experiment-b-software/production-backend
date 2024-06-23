@@ -2,10 +2,11 @@ import java.io.*;
 import java.net.*;
 import java.util.zip.*;
 import java.nio.file.*;
+import java.nio.charset.Charset;
 
 public class Serverexp {
 
-    public Serverexp() {
+    public Serverexp(){
 
     }
 
@@ -45,23 +46,43 @@ public class Serverexp {
         }
     }
 
+
     //クライアント側からファイルの中身を受け取る関数
-    public void getfile(String file_name, ServerSocket serverSocket){
+    public void getfile(String directory_name, String file_name, ServerSocket serverSocket){
         try (Socket socket = serverSocket.accept()) {
             System.out.println("Established connection to Client... " + socket);
-    
+            String p;
+            String pa;
+            if(!checkFileExists(getCurrentPath(), directory_name)){
+                p = getCurrentPath();
+            }else{
+                p = getCurrentPath() + "/" + directory_name;
+            }
+
+            pa = p + "/" + file_name + ".zip";
+
             // 入力ストリームを取得
             InputStream is = socket.getInputStream();
             
             // ★受信ファイルを保存する
-            try (FileOutputStream fos = new FileOutputStream(file_name)) {
+            try (FileOutputStream fos = new FileOutputStream(pa)) {
               byte[] buffer = new byte[1024];
               int read;
               while ((read = is.read(buffer)) != -1) {
                 fos.write(buffer, 0, read);
               }
-              socket.close();
-              System.out.println("File Reception Successful...");
+                socket.close();
+                System.out.println("File Reception Successful...");
+
+                unzipFolder(pa, p + "/" + file_name);
+
+                // 送信済みのzipを消去
+                File zipFile = new File(pa);
+                if (zipFile.exists()) {
+                    zipFile.delete();
+                }
+
+
             }
         }catch(IOException e){
             e.printStackTrace();
@@ -75,25 +96,36 @@ public class Serverexp {
     }
 
     //ファイルの中身をクライアント側に送る
-    public void sendFileToClient(String fileName, ServerSocket serverSocket) {
+    public void sendFileToClient(String directory_name, String file_name, ServerSocket serverSocket) {
         try (Socket socket = serverSocket.accept()) {
             System.out.println("Established connection to Client... " + socket);
             OutputStream os = socket.getOutputStream();
             PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)), true);
 
-            if (!checkFileExists(getCurrentPath(), fileName)) {
+            if (!checkFileExists(getCurrentPath() + "/" + directory_name, file_name)) {
                 out.println("error: file not found");
-                System.out.println("Cannot find such file: " + fileName);
+                System.out.println("Cannot find such file: " + file_name);
             } else {
                 out.println("ok");
-                try (FileInputStream fis = new FileInputStream(fileName)) {
+
+                //zipにする
+                String p = getCurrentPath() + "/" + directory_name + "/" + file_name;
+                Makezip(p, file_name);
+                String pa = getCurrentPath() + "/" + file_name +".zip";
+
+                try (FileInputStream fis = new FileInputStream(pa)) {
                     byte[] buffer = new byte[1024];
                     int read;
                     while ((read = fis.read(buffer)) != -1) {
                         os.write(buffer, 0, read);
                     }
                     os.flush();
-                    System.out.println("File sent successfully: " + fileName);
+                    System.out.println("File sent successfully: " + file_name);
+                    // 送信済みのzipを消去
+                    File zipFile = new File(pa);
+                    if (zipFile.exists()) {
+                        zipFile.delete();
+                    }
                 }
             }
         } catch (IOException e) {
@@ -107,7 +139,7 @@ public class Serverexp {
             System.out.println("Established connection to Client... " + socket);
 
             // Zipにする
-            Makezip("/usr/src/current");
+            //Makezip(foldername);
             System.out.println("Folder zipped");
 
             // zipをクライアントへ送る
@@ -136,9 +168,9 @@ public class Serverexp {
     }
 
     //zipを作る
-    public static void Makezip(String inputPath){
+    public static void Makezip(String inputPath, String foldername){
         var path = Paths.get(inputPath);
-        var zipFilePath = Paths.get("result.zip");
+        var zipFilePath = Paths.get(foldername + ".zip");
         if (Files.exists(path)) {
             try (var zip = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFilePath.toFile())))) {
                 if (Files.isDirectory(path)) {
@@ -171,6 +203,56 @@ public class Serverexp {
                         throw new RuntimeException("error occured in directoryZip", e);
                     }
                 });
+    }
+
+        // サーバーから受け取ったzipを指定した場所に展開
+    public void unzipFolder(String inputfile, String outputDir) {
+        
+        try(
+            FileInputStream fis = new FileInputStream(inputfile);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+        	ZipInputStream zis = new ZipInputStream(bis, Charset.forName("UTF-8"));
+        ) {
+        	ZipEntry zipentry;
+    		// zipの中のファイルがあるだけ繰り返す
+    		// 展開後のファイルサイズ、ファイル名に注意
+        	while((zipentry = zis.getNextEntry()) !=null) {
+
+                File newFile = new File(outputDir + File.separator + zipentry.getName());
+
+                if (zipentry.isDirectory()) {
+                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
+                        throw new IOException("Failed to create directory " + newFile);
+                    }
+                } else {
+                    // 親ディレクトリを作成する
+                    File parent = newFile.getParentFile();
+                    if (!parent.isDirectory() && !parent.mkdirs()) {
+                        throw new IOException("Failed to create directory " + parent);
+                    }
+
+                    // ファイルを書き出す
+                    try (FileOutputStream fos = new FileOutputStream(newFile);
+                         BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                        byte[] data = new byte[1024]; // 1KB 調整可
+                        int count;
+                        while ((count = zis.read(data)) != -1) {
+                            bos.write(data, 0, count);
+                        }
+                    }
+                }
+                zis.closeEntry();
+        	}
+            // 展開済みのzipを消去
+            File zipFile = new File(inputfile);
+            if (zipFile.exists()) {
+                zipFile.delete();
+            }
+
+            System.out.println("Unzipped folder successfully");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
     
 }

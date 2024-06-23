@@ -12,6 +12,8 @@ public class FileSendServer {
     //コマンドの名前とファイル名を一時保存
     String command_name;
     String file_name;
+    String directory_name;
+
 
    try {
       //サーバーの起動
@@ -31,19 +33,23 @@ public class FileSendServer {
           //送る
           case "send":
 
+            directory_name = eva_server.getfilename(serverSocket);
             file_name = eva_server.getfilename(serverSocket);
-            eva_server.getfile(file_name, serverSocket);
+            eva_server.getfile(directory_name, file_name, serverSocket);
             break;
 
           //ファイル名を指定してダウンロード
           case "get":
 
+            directory_name = eva_server.getfilename(serverSocket);
             file_name = eva_server.getfilename(serverSocket);
-            eva_server.sendFileToClient(file_name, serverSocket);
+            eva_server.sendFileToClient(directory_name, file_name, serverSocket);
             break;
           
           case "pull":
-            eva_server.sendFolderToClient(serverSocket);
+
+            //file_name = eva_server.getfilename(serverSocket);
+            eva_server.sendFileToClient("mogit", "current", serverSocket);
             break;
 
           default:
