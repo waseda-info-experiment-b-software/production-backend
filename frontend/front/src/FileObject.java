@@ -34,26 +34,37 @@ public abstract class FileObject {
         }
         hexString.append(hex);
       }
-
-      String hash = hexString.toString();
-      String firstTwoChars = hash.substring(0, 2);
-      String rest = hash.substring(2);
-
-      String dirPath = "current/objects/" + firstTwoChars;
-
-      try {
-        Path path = Paths.get(dirPath);
-        Files.createDirectories(path);
-        // ハッシュ値をファイルに書き出す
-        FileObjectManipulation.writeFile(rawBytes, dirPath + "/" + rest);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
       // ハッシュ値を出力
       return hexString.toString();
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
       return "";
+    }
+  }
+
+  /**
+   * ファイルオブジェクトをファイルに書き出す。
+   * ファイル名はハッシュ値とする。
+   * ファイルの書き出し先は、current/objects/ハッシュ値の先頭2文字/ハッシュ値の残りの部分
+   * 
+   * 例: ハッシュ値が"0123456789abcdef0123456789abcdef01234567"の場合
+   * current/objects/01/23456789abcdef0123456789abcdef01234567
+   */
+  void writeToFile() {
+    byte[] rawBytes = createRawBytes();
+    String hash = getHash();
+    String firstTwoChars = hash.substring(0, 2);
+    String rest = hash.substring(2);
+
+    String dirPath = ".mogit/objects/" + firstTwoChars;
+
+    try {
+      Path path = Paths.get(dirPath);
+      Files.createDirectories(path);
+      // ハッシュ値をファイルに書き出す
+      FileObjectManipulation.writeFile(rawBytes, dirPath + "/" + rest);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 }

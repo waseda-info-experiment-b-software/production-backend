@@ -1,10 +1,6 @@
 import java.sql.Date;
 
 public class CatFileObject {
-  public static void main(String[] args) {
-    CatFileObject catFileObject = new CatFileObject();
-    catFileObject.catFile("de22ceb0ad4d4888198e9b79661a1eee92e79dc0");
-  }
   /**
    * ファイルオブジェクトを表示するメソッド
    * @param hash 表示したいファイルオブジェクトのハッシュ

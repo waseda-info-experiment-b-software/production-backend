@@ -308,59 +308,6 @@ public class Clientexp {
             return "";
         }
     }   
-
-    /**
-     * ハッシュ値を基にディレクトリを作成し、ZIPで圧縮したファイルオブジェクトを作成
-     * 
-     * @param filePath ファイルのパス
-     */
-    public void createDirectoryAndZipFile(String filePath) {
-        try {
-            // 当該ファイルのパスと、中身についてバイトデータで取得
-            Path fPath = Paths.get(filePath);
-            long fileSize = Files.walk(fPath).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
-            byte[] fileBytes = Files.readAllBytes(fPath);
-
-            // ファイル中身をあげて、その中身からSHA-1ハッシュを取得
-            String hashValue = createBlobHashString(fileSize, fileBytes);
-            System.out.println("Hash value: " + hashValue);
-            if (hashValue == "") {
-                return;
-            }
-
-            // ハッシュの先頭2文字をディレクトリ名、残りをファイル名とするため分割
-            String firstTwoChars = hashValue.substring(0, 2);
-            String remainingChars = hashValue.substring(2);
-
-            String directoryPath = ".mogit/objects/" + firstTwoChars;
-            Path path = Paths.get(directoryPath);
-            Files.createDirectories(path);
-
-            String zipFilePath = directoryPath + "/" + remainingChars + ".zip";
-            try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFilePath));
-                 FileInputStream fis = new FileInputStream(filePath)) {
-                ZipEntry zipEntry = new ZipEntry(filePath);
-                zos.putNextEntry(zipEntry);
-
-                byte[] bytes = new byte[1024];
-                int length;
-
-                // ヘッダーを追加
-                String header = "blob " + fileSize + "\0";
-                zos.write(header.getBytes("UTF-8"));
-
-                // ファイルの内容を追加
-                while ((length = fis.read(bytes)) >= 0) {
-                    zos.write(bytes, 0, length);
-                }
-                zos.closeEntry();
-            }
-            System.out.println("File zipped successfully at " + zipFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     
     //あればよいかもという事で作りました。今いる階層のファイルとフォルダを取得するやつです
     public void listFilesInDirectory() {

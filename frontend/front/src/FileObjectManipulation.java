@@ -43,6 +43,8 @@ public class FileObjectManipulation {
     }
   }
 
+  
+
   // 展開を担う
   private static byte[] readFile(String filePath) throws IOException {
         File file = new File(filePath);
@@ -78,11 +80,11 @@ public class FileObjectManipulation {
     return baos.toByteArray();
   }
 
-  public static void main(String[] args) {
-    try {
-      System.out.println(new String(decompressData("current/objects/f7/877ea76c4fc92c233fc91996bef60f9e0f832d"), "UTF-8"));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+  // public static void main(String[] args) {
+  //   try {
+  //     System.out.println(new String(decompressData("current/objects/f7/877ea76c4fc92c233fc91996bef60f9e0f832d"), "UTF-8"));
+  //   } catch (Exception e) {
+  //     e.printStackTrace();
+  //   }
+  // }
 }

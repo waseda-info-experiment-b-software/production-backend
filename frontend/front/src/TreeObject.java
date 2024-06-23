@@ -66,4 +66,15 @@ public class TreeObject extends FileObject {
 
     return sb.toString().getBytes(StandardCharsets.UTF_8);
   }
+
+  void writeToFiles() {
+    writeToFile();
+    for (FileObject child : children) {
+      if (child instanceof TreeObject) {
+        ((TreeObject) child).writeToFiles();
+      } else {
+        child.writeToFile();
+      }
+    }
+  }
 }

@@ -1,5 +1,8 @@
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class FileSendClient {
@@ -65,20 +68,35 @@ public class FileSendClient {
                     case "init":
                       init.init();
                       break;
+
                     case "cat-file":
                       cat.catFile(parts[2]);
                       break;
 
                     case "hash-objects":
-                      client.createDirectoryAndZipFile(parts[2]);
+                      Path fpath = Paths.get(parts[2]);
+                      File file = new File(parts[2]);
+                      if (!file.exists()) {
+                        System.out.println("File not found");
+                        break;
+                      }
+                      FileObject fileObject;
+                      if (file.isDirectory()) {
+                        fileObject = new TreeObject(fpath, 0);
+                      } else {
+                        byte[] content = Files.readAllBytes(fpath);
+                        long fileSize = Files.walk(fpath).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
+                        fileObject = new BlobObject(content, fpath, fileSize);
+                      }
+                      fileObject.writeToFile();
+                      System.out.println("FileObject creation succeeded: " + fileObject.getHash());
                       break;
 
-                    case "tree-hash":
-                      System.out.println(client.createTreeHashString(parts[2]));
-                      break;
-
-                    case "add":
-                      client.createDirectoryAndZipFile(parts[2]);
+                    case "write-tree":
+                      Path path = Paths.get("test");
+                      TreeObject tree = new TreeObject(path, 0);
+                      tree.writeToFiles();
+                      System.out.println("TreeObject creation succeeded: " + tree.getHash());
                       break;
 
                     case "pull":
