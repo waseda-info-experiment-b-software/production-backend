@@ -48,30 +48,49 @@ public class CommitTreeManager {
       String treeHash = new String(data, index, nextIndex - index - 1);
 
       // 現在のcurrentディレクトリを削除
-      // サブディレクトリも含めて削除
       File currentDir = new File("current");
-      if (currentDir.exists()) {
-        System.out.println("delete current directory");
-        File[] files = currentDir.listFiles();
-        if (files != null) {
-          for (File file : files) {
-            if (file.isDirectory()) {
-              File[] subFiles = file.listFiles();
-              if (subFiles != null) {
-                for (File subFile : subFiles) {
-                  subFile.delete();
-                }
-              }
-            }
-            file.delete();
-          }
-        }
-      }
+      clearDirectory(currentDir);
 
       decompressTree("current", treeHash);
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public static void clearDirectory(File dir) {
+    File[] files = dir.listFiles();
+    if (files != null) { // ディレクトリが空でない場合
+      for (File file : files) {
+        if (file.isDirectory()) {
+          // サブディレクトリを再帰的に削除
+          deleteDirectoryRecursively(file);
+        } else {
+          // ファイルを削除
+          file.delete();
+        }
+      }
+    }
+  }
+
+  /**
+   * ディレクトリを再帰的に削除する
+   * @param dir
+   */
+  static void deleteDirectoryRecursively(File dir) {
+    File[] files = dir.listFiles();
+    if (files != null) { // ディレクトリが空でない場合
+      for (File file : files) {
+        if (file.isDirectory()) {
+          // サブディレクトリを再帰的に削除
+          deleteDirectoryRecursively(file);
+        } else {
+          // ファイルを削除
+          file.delete();
+        }
+      }
+    }
+    // ディレクトリを削除
+    dir.delete();
   }
 
   static void decompressTree(String dirPath, String hash) {
