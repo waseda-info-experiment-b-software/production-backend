@@ -1,11 +1,17 @@
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Scanner;
 
 public class FileSendClient {
   final static int PORT = 8080;
   public static void main(String[] args) {
     Clientexp client = new Clientexp();
+    MogitInit init = new MogitInit();
+    CatFileObject cat = new CatFileObject();
     String branch = "main";
     Scanner scanner = new Scanner(System.in);
     String input;
@@ -79,22 +85,34 @@ public class FileSendClient {
 
                       break;
 
+                    case "init":
+                      init.init();
+                      break;
+
                     case "cat-file":
-                      client.catFile(parts[2]);
+                      cat.catFile(parts[2]);
                       break;
 
                     case "hash-objects":
-                      client.createDirectoryAndZipFile(parts[2]);
+                      createHashObject(parts);
                       break;
 
-                    case "tree-hash":
-                      System.out.println(client.createTreeHashString(parts[2]));
+                    case "write-tree":
+                      writeTreeObject();
                       break;
 
-                    case "add":
-                      client.createDirectoryAndZipFile(parts[2]);
+                    case "commit":
+                      if (parts.length < 3) {
+                        System.out.println("Please input commit message");
+                        break;
+                      }
+                      writeCommitObject(parts[2]);
                       break;
-
+                    
+                    case "reset":
+                      CommitTreeManager.revert(parts[2]);
+                      break;
+                    
                     case "pull":
 
                       if(client.sendcommandServer(parts[1], serverIP, PORT)){
@@ -137,6 +155,98 @@ public class FileSendClient {
       e.printStackTrace();
     }
     scanner.close();
+  }
 
+  /**
+   * ファイルオブジェクトを作成する。
+   * @param parts コマンドのパーツ
+   */
+  static void createHashObject(String[] parts) {
+    Path fpath = Paths.get(parts[2]);
+    File file = new File(parts[2]);
+    if (!file.exists()) {
+      System.out.println("File not found");
+      return;
+    }
+    try {
+      FileObject fileObject;
+      if (file.isDirectory()) {
+        fileObject = new TreeObject(fpath, 0);
+      } else {
+          byte[] content = Files.readAllBytes(fpath);
+          long fileSize = Files.walk(fpath).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
+          fileObject = new BlobObject(content, fpath, fileSize);
+        
+      }
+      fileObject.writeToFile();
+      System.out.println("FileObject creation succeeded: " + fileObject.getHash());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * ツリーオブジェクトを作成する。
+   */
+  static void writeTreeObject() {
+    try {
+      Path path = Paths.get("current");
+
+      long fileSize = Files.walk(path).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
+      TreeObject tree = new TreeObject(path, fileSize);
+      tree.writeToFiles();
+      System.out.println("TreeObject creation succeeded: " + tree.getHash());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * コミットオブジェクトを作成する。
+   * @param message コミットメッセージ
+   */
+  static void writeCommitObject(String message) {
+    try {
+      Path path = Paths.get("current");
+
+      long fileSize = Files.walk(path).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
+
+      // プロジェクトディレクトリのツリーオブジェクトを作成
+      TreeObject tree = new TreeObject(path, fileSize);
+      tree.writeToFiles();
+
+      // コミットを作成
+      // TODO: 著者やコミッターの情報をどこかで設定できるようにする
+      long time = new Date().getTime();
+
+      // 以前のコミットを、.mogit/refs/heads/mainから取得
+      String parentHash = "";
+      File main = new File(".mogit/refs/heads/main");
+      if (main.exists()) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(main))) {
+          parentHash = reader.readLine();
+        } catch (IOException e) {
+          // 以前のコミットがない場合（根っこ）
+          parentHash = "";
+        }
+      }
+      
+      CommitObject commit = new CommitObject(tree, "yoshi-zen", "committer", message, parentHash, time);
+      commit.writeToFile();
+
+      // refs/head/mainにコミットを追加
+      // TODO: ブランチも動的に管理したいなあ
+      File file = new File(".mogit/refs/heads/main");
+      try (FileWriter writer = new FileWriter(file)) {
+        writer.write(commit.getHash());
+      } catch (IOException e) {
+        e.printStackTrace();
+        System.out.println("Cannot write commit to refs/head/main");
+      }
+      
+      System.out.println("TreeObject creation succeeded: " + tree.getHash());
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }
