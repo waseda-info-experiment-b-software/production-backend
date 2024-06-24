@@ -89,7 +89,10 @@ public class FileSendClient {
                       }
                       writeCommitObject(parts[2]);
                       break;
-
+                    
+                    case "reset":
+                      CommitTreeManager.revert(parts[2]);
+                      break;
                     
                     case "pull":
 
