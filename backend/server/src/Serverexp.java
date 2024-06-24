@@ -15,21 +15,20 @@ public class Serverexp {
 
     //csvファイルに特定のユーザー名とメールアドレスがいるかのチェック
     public boolean checkUserExists(String username, String email) {
+        boolean check = false;
         try (BufferedReader br = new BufferedReader(new FileReader("users.csv"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] user = line.split(",");
                 if (user[0].equals(username) && user[2].equals(email)) {
-                    return true;
-                }else{
-                    return false;
+                    check = true;
                 }
             }
+            return check;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
-        return false;
     }
 
     //今いるパスを表示する
