@@ -1,12 +1,34 @@
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
 import java.util.zip.*;
+
+import javax.print.FlavorException;
+
 import java.nio.file.*;
 
 public class Serverexp {
 
     public Serverexp() {
 
+    }
+
+    //csvファイルに特定のユーザー名とメールアドレスがいるかのチェック
+    public boolean checkUserExists(String username, String email) {
+        boolean check = false;
+        try (BufferedReader br = new BufferedReader(new FileReader("users.csv"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] user = line.split(",");
+                if (user[0].equals(username) && user[2].equals(email)) {
+                    check = true;
+                }
+            }
+            return check;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     //今いるパスを表示する
@@ -72,6 +94,18 @@ public class Serverexp {
     public boolean checkFileExists(String folderPath, String fileName) {
         File file = new File(folderPath, fileName);
         return file.exists();
+    }
+
+    //クライアント側に特定の文字を送る
+    public void sendMessageToClient(String message, ServerSocket serverSocket) {
+        try (Socket socket = serverSocket.accept()) {
+            System.out.println("Established connection to Client... " + socket);
+            OutputStream os = socket.getOutputStream();
+            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(os)), true);
+            out.println(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     //ファイルの中身をクライアント側に送る

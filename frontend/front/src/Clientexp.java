@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 import java.util.zip.*;
 import java.nio.charset.Charset;
 
@@ -7,7 +8,7 @@ public class Clientexp {
 
     public Clientexp(){
     }
-
+    
     // コマンドをサーバー側に送信する
     public boolean sendcommandServer(String commandname, InetAddress ipAddress, int port){
         try(Socket socket = new Socket(ipAddress, port)){
@@ -75,6 +76,113 @@ public class Clientexp {
             e.printStackTrace();
         }
     }
+
+    //特定の文字列をサーバー側に送る
+    public void sendMessageToServer(String message, InetAddress ipAddress, int port){
+        try(Socket socket = new Socket(ipAddress, port)){
+            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+            out.println(message);
+            socket.close();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //サーバーからメッセージを受け取る
+    public String receiveMessageFromServer(InetAddress ipAddress, int port) {
+        try (Socket socket = new Socket(ipAddress, port)) {
+            System.out.println("Established connection to Server... " + socket);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String response = in.readLine();
+            return response;
+        }catch(IOException e){
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    //configファイルをいじるための関数
+    public void handleConfig(Scanner scanner) {
+        //中身があれば上書きするか聞くようにしてます
+        File configFile = new File(".config/config.txt");
+        try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+            String line = reader.readLine();
+            if (line != null) {
+                System.out.print("Config already exists. Overwrite? (y/n): ");
+                String response = scanner.nextLine();
+                if (!response.equalsIgnoreCase("y")) {
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    
+        System.out.print("Username: ");
+        String username = scanner.nextLine();
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
+    
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
+            writer.write(username + "\n" + email);
+        } catch (IOException e) {
+            System.out.println("Failed to write config file: " + e.getMessage());
+        }
+        System.out.println("Config saved.");
+    }
+    
+    // .config/config.txtの中身を表示する
+    public void viewConfigFileContent() {
+        File configFile = new File(".config/config.txt");
+        try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+            String line;
+            int number = 0;
+            while ((line = reader.readLine()) != null) {
+                if ( number == 0 ){
+                    System.out.print("Username:");
+                }else{
+                    System.out.print("Email   :");
+                }
+                System.out.println(line);
+                number++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     * サーバーにユーザー、メールアドレスが登録されているか確認するための関数
+     * .config/config.txtにあるので引数はIPアドレスとポートのみ
+     * @param serverIP, PORT →IPアドレスとポート番号
+     * @return　文字列(サーバーとやり取りできるならサーバーの返信、なければ"no config"もしくは"not")
+     * 
+     */
+    public String handleConfigCheck(InetAddress serverIP, int PORT) {
+        File checkConfigFile = new File(".config/config.txt");
+        if (!checkConfigFile.exists()) {
+            System.out.println("Config file does not exist.");
+            return "no config";
+        }
+    
+        try (BufferedReader reader = new BufferedReader(new FileReader(checkConfigFile))) {
+            String storedUsername = reader.readLine();
+            String storedEmail = reader.readLine();
+            if (sendcommandServer("config-check", serverIP, PORT)) {
+                sendMessageToServer(storedUsername, serverIP, PORT);
+                sendMessageToServer(storedEmail, serverIP, PORT);
+                String message = receiveMessageFromServer(serverIP, PORT);
+                return message;
+            } else {
+                System.out.println("Cannot connect to server");
+                return "not";
+            }
+        } catch (IOException e) {
+            System.out.println("Failed to read config file: " + e.getMessage());
+        }
+        return "not";
+    }
+
 
     //サーバーからファイルを受け取る
     public void receiveFileFromServer(String filename, InetAddress ipAddress, int port) {

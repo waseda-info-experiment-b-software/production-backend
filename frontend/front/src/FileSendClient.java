@@ -16,12 +16,15 @@ public class FileSendClient {
     Scanner scanner = new Scanner(System.in);
     String input;
 
+
+
     try{
-      InetAddress serverIP = InetAddress.getByName("production-java-server-1");
+      InetAddress serverIP = InetAddress.getByName("production-backend-java-server-1");
 
       while (true) {
             System.out.print(client.getCurrentPath()+ " (" +branch + ")"+"$ ");
             input = scanner.nextLine();
+
 
             switch (input) {
 
@@ -34,6 +37,22 @@ public class FileSendClient {
                   String[] parts = input.split(" ");
 
                   switch (parts[1]) {
+                    
+                    //.config/config.txtの編集
+                    case "config":
+                      client.handleConfig(scanner);
+                      break;
+
+                    case "config-look":
+                      client.viewConfigFileContent();
+                      break;
+                    //サーバーに登録されているかチェックする
+                    case "config-check":
+                      String message;
+                      message = client.handleConfigCheck(serverIP, PORT);
+                      System.out.println(message);
+                      break;
+                      
                     // ここではファイルを送っている
                     //ファイルが存在しなければ送らない(サーバー側に空のファイルができちゃうので)
                     case "send":
