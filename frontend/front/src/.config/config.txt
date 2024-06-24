@@ -1,2 +1,2 @@
-koko
-ko
+yoshi-zen
+hoge@example.com
