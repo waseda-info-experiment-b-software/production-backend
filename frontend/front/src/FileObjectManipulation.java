@@ -10,7 +10,6 @@ import java.util.zip.Inflater;
  * ファイルオブジェクトの圧縮・展開を担う 
  */
 public class FileObjectManipulation {
-
   /**
    * あるバイト列を、zlibを使って圧縮するメソッド
    * @param data 入力バイト列

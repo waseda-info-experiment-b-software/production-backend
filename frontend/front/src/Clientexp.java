@@ -77,6 +77,25 @@ public class Clientexp {
         }
     }
 
+    public void sendFileToServer(File file, InetAddress ipAddress, int port) {
+        try (Socket socket = new Socket(ipAddress, port)) {
+            System.out.println("Established connection to Server... " + socket);
+            
+            try (FileInputStream fis = new FileInputStream(file);
+                OutputStream os = socket.getOutputStream()) {
+                byte[] buffer = new byte[1024];
+                    int read;
+                while ((read = fis.read(buffer)) != -1) {
+                    os.write(buffer, 0, read);
+                }
+                socket.close();
+            }
+            System.out.println("File Transport Successful...");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     //特定の文字列をサーバー側に送る
     public void sendMessageToServer(String message, InetAddress ipAddress, int port){
         try(Socket socket = new Socket(ipAddress, port)){

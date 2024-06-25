@@ -125,6 +125,11 @@ public class FileSendClient {
                       break;
 
                     case "push":
+                      if (client.sendcommandServer(parts[1], serverIP, PORT)) {
+                        PushToServer.pushToServer();
+                      } else {
+                        System.out.println("cannot connect to server");
+                      }
                       break;
 
                     case "unzip":

@@ -90,6 +90,28 @@ public class Serverexp {
         }
     }
 
+    public void getfile(File outputFile, ServerSocket serverSocket) {
+        try (Socket socket = serverSocket.accept()) {
+            System.out.println("Established connection to Client... " + socket);
+    
+            // 入力ストリームを取得
+            InputStream is = socket.getInputStream();
+            
+            // ★受信ファイルを保存する
+            try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+              byte[] buffer = new byte[1024];
+              int read;
+              while ((read = is.read(buffer)) != -1) {
+                fos.write(buffer, 0, read);
+              }
+              socket.close();
+              System.out.println("File Reception Successful...");
+            }
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
     //指定されたパス内にファイルが存在するかどうかをチェックする
     public boolean checkFileExists(String folderPath, String fileName) {
         File file = new File(folderPath, fileName);

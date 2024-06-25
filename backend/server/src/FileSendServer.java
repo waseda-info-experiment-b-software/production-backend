@@ -53,7 +53,6 @@ public class FileSendServer {
 
           //ファイル名を指定してダウンロード
           case "get":
-
             file_name = eva_server.getfilename(serverSocket);
             eva_server.sendFileToClient(file_name, serverSocket);
             break;
@@ -62,7 +61,12 @@ public class FileSendServer {
             eva_server.sendFolderToClient(serverSocket);
             break;
 
+          case "push":
+            PushedFromClient.pushed(serverSocket);
+            break;
+            
           default:
+            System.out.println(command_name);
             System.out.println("waiting");
             break;
         }
