@@ -104,7 +104,7 @@ public class Clientexp {
     //configファイルをいじるための関数
     public void handleConfig(Scanner scanner) {
         //中身があれば上書きするか聞くようにしてます
-        File configFile = new File(".config/config.txt");
+        File configFile = new File(".mogit/config");
         try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
             String line = reader.readLine();
             if (line != null) {
@@ -131,9 +131,9 @@ public class Clientexp {
         System.out.println("Config saved.");
     }
     
-    // .config/config.txtの中身を表示する
+    // .mogit/configの中身を表示する
     public void viewConfigFileContent() {
-        File configFile = new File(".config/config.txt");
+        File configFile = new File(".mogit/config");
         try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
             String line;
             int number = 0;
@@ -153,13 +153,13 @@ public class Clientexp {
 
     /*
      * サーバーにユーザー、メールアドレスが登録されているか確認するための関数
-     * .config/config.txtにあるので引数はIPアドレスとポートのみ
+     * .mogit/configにあるので引数はIPアドレスとポートのみ
      * @param serverIP, PORT →IPアドレスとポート番号
      * @return　文字列(サーバーとやり取りできるならサーバーの返信、なければ"no config"もしくは"not")
      * 
      */
     public String handleConfigCheck(InetAddress serverIP, int PORT) {
-        File checkConfigFile = new File(".config/config.txt");
+        File checkConfigFile = new File(".mogit/config");
         if (!checkConfigFile.exists()) {
             System.out.println("Config file does not exist.");
             return "no config";

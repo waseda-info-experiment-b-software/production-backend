@@ -216,7 +216,6 @@ public class FileSendClient {
       tree.writeToFiles();
 
       // コミットを作成
-      // TODO: 著者やコミッターの情報をどこかで設定できるようにする
       long time = new Date().getTime();
 
       // 以前のコミットを、.mogit/refs/heads/mainから取得
@@ -233,7 +232,7 @@ public class FileSendClient {
 
       // .configから、ユーザー名を取得
       String author = "";
-      File config = new File(".config/config.txt");
+      File config = new File(".mogit/config");
       if (config.exists()) {
         try (BufferedReader reader = new BufferedReader(new FileReader(config))) {
           author = reader.readLine();
@@ -243,6 +242,11 @@ public class FileSendClient {
           System.err.println("\t\teva config");
           return;
         }
+      } else {
+        // .configが存在しない場合
+        System.err.println("Config file is not set properly. Please enter the command below to set the config file:");
+        System.err.println("\t\teva config");
+        return;
       }
       
       CommitObject commit = new CommitObject(tree, author, message, parentHash, time);
