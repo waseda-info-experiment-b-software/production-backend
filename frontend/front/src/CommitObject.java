@@ -1,11 +1,12 @@
 public class CommitObject extends FileObject {
   TreeObject tree;
   String author;
+  String committer;
   String message;
   String parentHash;
   long time;
 
-  CommitObject(TreeObject tree, String author, String committer, String message, String parentHash, long time) {
+  CommitObject(TreeObject tree, String author, String message, String parentHash, long time) {
     this.tree = tree;
     this.author = author;
     this.message = message;

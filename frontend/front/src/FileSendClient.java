@@ -230,8 +230,22 @@ public class FileSendClient {
           parentHash = "";
         }
       }
+
+      // .configから、ユーザー名を取得
+      String author = "";
+      File config = new File(".config/config.txt");
+      if (config.exists()) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(config))) {
+          author = reader.readLine();
+        } catch (IOException e) {
+          // ユーザー名が設定されていない場合
+          System.err.println("Config file is not set properly. Please enter the command below to set the config file:");
+          System.err.println("\t\teva config");
+          return;
+        }
+      }
       
-      CommitObject commit = new CommitObject(tree, "yoshi-zen", "committer", message, parentHash, time);
+      CommitObject commit = new CommitObject(tree, author, message, parentHash, time);
       commit.writeToFile();
 
       // refs/head/mainにコミットを追加
