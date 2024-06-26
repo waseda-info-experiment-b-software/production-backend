@@ -1,4 +1,5 @@
 package mogitClient.src.model;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 

@@ -1,4 +1,4 @@
-package mogitClient.src.controller.Commands.init;
+package mogitClient.src.controller.commands.init;
 import java.io.File;
 import java.io.FileWriter;
 
@@ -92,6 +92,18 @@ public class MogitInit {
     current.mkdir();
 
 
-    System.out.println("initialized empty mogit repository in " + file.getAbsolutePath());
+    System.out.println("以下のディレクトリにて、正常にmogitが初期化されました: " + file.getAbsolutePath());
+    System.out.println("================================================================================");
+    System.out.println("mogit のリポジトリにおける構造は以下の通りです。");
+    System.out.println("  .mogit/\t\t\tリポジトリに相当します");
+    System.out.println("    objects/\t\t\tファイルオブジェクトを保存するディレクトリです");
+    System.out.println("    refs/\t\t\tブランチ情報を保持するディレクトリです");
+    System.out.println("      heads/\t\t\tブランチのヘッド情報を保持するディレクトリです");
+    System.out.println("    HEAD\t\t\t現在のブランチを指すファイルです");
+    System.out.println("    config\t\t\tユーザー名を記録するファイルです");
+    System.out.println("  current/\t\t\tワークツリーに相当するディレクトリです\n");
+    System.out.println("*** currentディレクトリに、版管理をしたいフォルダやファイルを投入してください ***");
+    System.out.println("================================================================================");
+
   }
 }

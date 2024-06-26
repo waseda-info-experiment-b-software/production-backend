@@ -1,4 +1,4 @@
-package mogitClient.src.controller.Commands.cat;
+package mogitClient.src.controller.commands.cat;
 import java.util.Date;
 
 import mogitClient.src.constants.Constants;

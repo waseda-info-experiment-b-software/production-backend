@@ -1,4 +1,4 @@
-package mogitClient.src.controller.Commands.push;
+package mogitClient.src.controller.commands.push;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;

@@ -1,4 +1,4 @@
-package mogitClient.src.controller.Commands.commit;
+package mogitClient.src.controller.commands.commit;
 
 import java.io.File;
 import java.nio.file.Files;

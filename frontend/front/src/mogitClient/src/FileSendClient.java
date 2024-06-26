@@ -5,14 +5,17 @@ import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
 
 import mogitClient.src.constants.Constants;
-import mogitClient.src.controller.Commands.cat.CatFileObject;
-import mogitClient.src.controller.Commands.commit.CommitTreeManager;
-import mogitClient.src.controller.Commands.init.MogitInit;
-import mogitClient.src.controller.Commands.push.PushToServer;
+import mogitClient.src.controller.commands.cat.CatFileObject;
+import mogitClient.src.controller.commands.commit.CommitTreeManager;
+import mogitClient.src.controller.commands.help.Help;
+import mogitClient.src.controller.commands.init.MogitInit;
+import mogitClient.src.controller.commands.log.Log;
+import mogitClient.src.controller.commands.push.PushToServer;
 import mogitClient.src.controller.utils.Clientexp;
 import mogitClient.src.model.BlobObject;
 import mogitClient.src.model.CommitObject;
@@ -84,6 +87,11 @@ public class FileSendClient {
                       break;
                   
 
+
+                    case "help":
+                      Help.showHelp();
+                      break;
+
                     //ファイル名を指定してダウンロード
                     case "get":
 
@@ -94,6 +102,10 @@ public class FileSendClient {
                         System.out.println("cannot connect to server");
                       }
 
+                      break;
+
+                    case "log":
+                     Log.showLog();
                       break;
 
                     case "init":
@@ -117,10 +129,10 @@ public class FileSendClient {
                         System.out.println("Please input commit message");
                         break;
                       }
-                      writeCommitObject(parts[2]);
+                      writeCommitObject(Arrays.copyOfRange(parts, 2, parts.length));
                       break;
                     
-                    case "reset":
+                    case "checkout":
                       CommitTreeManager.revert(parts[2]);
                       break;
                     
@@ -221,14 +233,31 @@ public class FileSendClient {
    * コミットオブジェクトを作成する。
    * @param message コミットメッセージ
    */
-  static void writeCommitObject(String message) {
+  static void writeCommitObject(String[] messages) {
     try {
+      // ワークツリーであるcurrentディレクトリのパスを取得
       Path path = Paths.get(Constants.SRC_PATH + "current");
 
+      // ワークツリーのファイルサイズを取得
       long fileSize = Files.walk(path).map(Path::toFile).filter(f -> f.isFile()).mapToLong(f -> f.length()).sum();
 
       // プロジェクトディレクトリのツリーオブジェクトを作成
       TreeObject tree = new TreeObject(path, fileSize);
+
+      // 現在指しているブランチを.mogit/HEADから取得
+      File head = new File(Constants.SRC_PATH + ".mogit/HEAD");
+      String branch = "";
+      if (head.exists()) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(head))) {
+          branch = reader.readLine();
+        } catch (IOException e) {
+          e.printStackTrace();
+          System.out.println("HEADファイルが見つかりませんでした。");
+          return;
+        }
+      }
+
+      // ツリーオブジェクトをファイルに書き出す
       tree.writeToFiles();
 
       // コミットを作成
@@ -236,7 +265,7 @@ public class FileSendClient {
 
       // 以前のコミットを、.mogit/refs/heads/mainから取得
       String parentHash = "";
-      File main = new File(Constants.SRC_PATH + ".mogit/refs/heads/main");
+      File main = new File(Constants.SRC_PATH + ".mogit/" + branch);
       if (main.exists()) {
         try (BufferedReader reader = new BufferedReader(new FileReader(main))) {
           parentHash = reader.readLine();
@@ -254,37 +283,54 @@ public class FileSendClient {
           author = reader.readLine();
           if (author == null || author.isEmpty()) {
             // ユーザー名が設定されていない場合
-            System.err.println("Config file is not set properly. Please enter the command below to set the config file:");
+            System.err.println("ユーザー名とメールアドレスが正しく設定されていません。以下のコマンドを入力して設定してください。");
             System.err.println("\t\teva config");
             return;
           }
         } catch (IOException e) {
           // ユーザー名が設定されていない場合
-          System.err.println("Config file is not set properly. Please enter the command below to set the config file:");
+          System.err.println("ユーザー名とメールアドレスが正しく設定されていません。以下のコマンドを入力して設定してください。");
           System.err.println("\t\teva config");
           return;
         }
       } else {
         // .configが存在しない場合
-        System.err.println("Config file is not set properly. Please enter the command below to set the config file:");
+        System.err.println("ユーザー名とメールアドレスが正しく設定されていません。以下のコマンドを入力して設定してください。");
         System.err.println("\t\teva config");
         return;
       }
       
-      CommitObject commit = new CommitObject(tree, author, message, parentHash, time);
+      // *** コミットオブジェクトを作成 ***
+      CommitObject commit = new CommitObject(tree, author, String.join(" ", messages), parentHash, time);
       commit.writeToFile();
 
       // refs/head/mainにコミットを追加
-      // TODO: ブランチも動的に管理したいなあ
-      File file = new File(Constants.SRC_PATH + ".mogit/refs/heads/main");
+      File file = new File(Constants.SRC_PATH + ".mogit/" + branch);
       try (FileWriter writer = new FileWriter(file)) {
         writer.write(commit.getHash());
       } catch (IOException e) {
         e.printStackTrace();
-        System.out.println("Cannot write commit to refs/head/main");
+        System.out.println(branch + "にコミットできませんでした。");
+      }
+
+      // logファイルに、コミットの情報を追加しておく
+      File log = new File(Constants.SRC_PATH + ".mogit/logs/" + branch);
+      try (FileWriter writer = new FileWriter(log, true)) {
+        writer.write("====================================================\n");
+        writer.write("commit hash:\t\t" + commit.getHash() + "\n");
+        writer.write("parent commit:\t\t" + parentHash + "\n");
+        writer.write("working tree hash:\t" + tree.getHash() + "\n");
+        writer.write("commit message:\t\t" + String.join(" ", messages) + "\n");
+        writer.write("commit created at:\t" + new Date(time) + "\n");
+        writer.write("commit created by:\t" + author + "\n");
+        writer.write("\n");
+      } catch (IOException e) {
+        e.printStackTrace();
+        System.out.println(branch + " ブランチのログにコミット情報を追加できませんでした。");
       }
       
-      System.out.println("TreeObject creation succeeded: " + tree.getHash());
+      System.out.println("このコミットが指す TreeObject :\t\t" + tree.getHash());
+      System.out.println("このコミットを表す CommitObject :\t" + commit.getHash());
     } catch (IOException e) {
       e.printStackTrace();
     }
