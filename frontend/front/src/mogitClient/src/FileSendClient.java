@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.Scanner;
 
 import mogitClient.src.constants.Constants;
+import mogitClient.src.controller.commands.branch.BranchList;
+import mogitClient.src.controller.commands.branch.CreateBranch;
 import mogitClient.src.controller.commands.cat.CatFileObject;
 import mogitClient.src.controller.commands.commit.CommitTreeManager;
 import mogitClient.src.controller.commands.help.Help;
@@ -36,6 +38,7 @@ public class FileSendClient {
       InetAddress serverIP = InetAddress.getByName("production-backend-java-server-1");
 
       while (true) {
+        branch = BranchList.getCurrentBranch().replace("refs/heads/", "");
             System.out.print(client.getCurrentPath()+ " (" +branch + ")"+"$ ");
             input = scanner.nextLine();
 
@@ -123,6 +126,26 @@ public class FileSendClient {
                     case "write-tree":
                       writeTreeObject();
                       break;
+                    
+                    case "branch":
+                      CreateBranch branchCommand = new CreateBranch();
+                      branchCommand.branch(parts[2]);
+                      break;
+
+                    case "checkout":
+                      CreateBranch branchCommand2 = new CreateBranch();
+                      if (parts[2].equals("-b")) {
+                        if (parts.length < 4) {
+                          System.out.println("Please input branch name");
+                          break;
+                        }
+                        branchCommand2.branch(parts[3]);
+                        branchCommand2.checkout(parts[3]);
+                      } else {
+                        branchCommand2.checkout(parts[2]);
+                      }
+                      
+                      break;
 
                     case "commit":
                       if (parts.length < 3) {
@@ -132,7 +155,7 @@ public class FileSendClient {
                       writeCommitObject(Arrays.copyOfRange(parts, 2, parts.length));
                       break;
                     
-                    case "checkout":
+                    case "reset":
                       CommitTreeManager.revert(parts[2]);
                       break;
                     
