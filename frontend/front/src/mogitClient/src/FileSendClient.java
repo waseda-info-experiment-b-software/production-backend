@@ -252,6 +252,12 @@ public class FileSendClient {
       if (config.exists()) {
         try (BufferedReader reader = new BufferedReader(new FileReader(config))) {
           author = reader.readLine();
+          if (author == null || author.isEmpty()) {
+            // ユーザー名が設定されていない場合
+            System.err.println("Config file is not set properly. Please enter the command below to set the config file:");
+            System.err.println("\t\teva config");
+            return;
+          }
         } catch (IOException e) {
           // ユーザー名が設定されていない場合
           System.err.println("Config file is not set properly. Please enter the command below to set the config file:");
