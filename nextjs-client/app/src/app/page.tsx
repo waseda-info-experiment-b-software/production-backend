@@ -1,25 +1,19 @@
-"use client";
-
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import { FileTableView } from "features/TableView";
 
 export default function Home() {
-  const [data, setData] = useState("");
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("http://localhost:8082/api/data"); // Javaアプリケーションのエンドポイント
-      const textData = await response.text();
-      setData(textData);
-    };
-
-    fetchData();
-  }, []);
-
   return (
-    <div>
-      <h1>Data from Java Server:</h1>
-      <p>{data}</p>
-    </div>
+    <main className="max-w-[768px] mx-auto">
+      <div className="py-6">
+        <div className="flex items-center justify-between py-6">
+          <div className="px-3 py-1 border border-solid border-gray-400 bg-gray-600 rounded-md">
+            develop
+          </div>
+          <button className="px-3 py-1 rounded-md border border-solid text-white border-green-950 bg-green-700">
+            Code
+          </button>
+        </div>
+        <FileTableView />
+      </div>
+    </main>
   );
 }
