@@ -31,7 +31,7 @@ public class BranchList {
       scanner.close();
     } catch (Exception e) {
       System.err.println("HEADファイルの読み込みに失敗しました");
-      e.printStackTrace();
+      // e.printStackTrace();
       return;
     }
 
@@ -52,7 +52,7 @@ public class BranchList {
       scanner.close();
     } catch (Exception e) {
       System.err.println("HEADファイルの読み込みに失敗しました");
-      e.printStackTrace();
+      // e.printStackTrace();
     }
 
     // HEADファイルの内容を表示

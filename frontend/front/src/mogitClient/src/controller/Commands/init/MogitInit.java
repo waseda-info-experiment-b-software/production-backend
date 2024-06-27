@@ -99,10 +99,13 @@ public class MogitInit {
     System.out.println("    objects/\t\t\tファイルオブジェクトを保存するディレクトリです");
     System.out.println("    refs/\t\t\tブランチ情報を保持するディレクトリです");
     System.out.println("      heads/\t\t\tブランチのヘッド情報を保持するディレクトリです");
+    System.out.println("    logs/\t\t\t変更履歴を保持するディレクトリです");
+    System.out.println("      refs/\t\t\tリファレンスの変更履歴を保持するディレクトリです");
+    System.out.println("        heads/\t\t\tブランチの変更履歴を保持するディレクトリです");
     System.out.println("    HEAD\t\t\t現在のブランチを指すファイルです");
     System.out.println("    config\t\t\tユーザー名を記録するファイルです");
     System.out.println("  current/\t\t\tワークツリーに相当するディレクトリです\n");
-    System.out.println("*** currentディレクトリに、版管理をしたいフォルダやファイルを投入してください ***");
+    System.out.println("*** [current]ディレクトリに、版管理をしたいフォルダやファイルを投入してください ***");
     System.out.println("================================================================================");
 
   }

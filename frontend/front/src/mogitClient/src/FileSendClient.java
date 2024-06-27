@@ -34,17 +34,20 @@ public class FileSendClient {
     Scanner scanner = new Scanner(System.in);
     String input;
 
-    try{
+    try {
       InetAddress serverIP = InetAddress.getByName("production-backend-java-server-1");
 
       while (true) {
         branch = BranchList.getCurrentBranch().replace("refs/heads/", "");
-            System.out.print(client.getCurrentPath()+ " (" +branch + ")"+"$ ");
-            input = scanner.nextLine();
-
+        if (branch.equals("")) {
+          System.out.println("  eva init によりリポジトリを初期化してください。");
+          // continue;
+        }
+        System.out.print(client.getCurrentPath()+ " (" +branch + ")"+"$ ");
+        input = scanner.nextLine();
+        
 
             switch (input) {
-
               case "help":
                 System.out.println("info of command");
                 break;
@@ -128,8 +131,12 @@ public class FileSendClient {
                       break;
                     
                     case "branch":
-                      CreateBranch branchCommand = new CreateBranch();
-                      branchCommand.branch(parts[2]);
+                      if (parts.length <= 2) {
+                        BranchList.listBranches();
+                      } else {
+                        CreateBranch branchCommand = new CreateBranch();
+                        branchCommand.branch(parts[2]);
+                      }
                       break;
 
                     case "checkout":
@@ -160,14 +167,12 @@ public class FileSendClient {
                       break;
                     
                     case "pull":
-
                       if(client.sendcommandServer(parts[1], serverIP, PORT)){
                         client.receiveFolderFromServer(serverIP, PORT);
                         client.unzipFolder("/usr/src/result.zip");
                       }else{
                         System.out.println("cannot connect to server");
                       }                     
-
                       break;
 
                     case "push":
