@@ -4,9 +4,11 @@ services:
     build: ./backend/docker/java
     ports:
       - 8080:8080
+      - 12000:3000
     tty: true
     volumes:
       - ./backend/server/src:/usr/src:cached
+      - ./backend/server/app:/usr/src/app:cached
   java-client:
     build: ./frontend/docker/java
     ports:
