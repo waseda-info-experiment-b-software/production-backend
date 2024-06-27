@@ -1,5 +1,9 @@
+package mogitServer.src;
 import java.io.*;
 import java.net.*;
+
+import mogitServer.src.commands.push.PushedFromClient;
+import mogitServer.src.utils.Serverexp;
 
 public class FileSendServer {
   final static int PORT = 8080;

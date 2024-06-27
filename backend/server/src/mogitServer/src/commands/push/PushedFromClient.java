@@ -1,3 +1,5 @@
+package mogitServer.src.commands.push;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -9,25 +11,28 @@ import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import mogitServer.src.constants.Constants;
+import mogitServer.src.utils.Serverexp;
+
 public class PushedFromClient {
   /**
    * pushコマンドを受けて、.mogitディレクトリを展開する
    */
-  static void pushed(ServerSocket serverSocket) {
+  public static void pushed(ServerSocket serverSocket) {
     // zipファイルを受け取る
 
     // もしここで.mogitディレクトリが存在しない場合は作成
-    File mogitDir = new File(".mogit");
+    File mogitDir = new File(Constants.SRC_PATH + ".mogit");
     if (!mogitDir.exists()) {
       mogitDir.mkdir();
     }
 
     // tmp作成
-    File tmpDir = new File(".mogit/tmp");
+    File tmpDir = new File(Constants.SRC_PATH + ".mogit/tmp");
     tmpDir.mkdir();
     
     // .mogit/tmpディレクトリに、受け取ったzipファイルを展開
-    File zipFile = new File(".mogit/tmp/result.zip");
+    File zipFile = new File(Constants.SRC_PATH + ".mogit/tmp/result.zip");
 
     // 受け取る
     Serverexp server = new Serverexp();
@@ -37,7 +42,7 @@ public class PushedFromClient {
     unzipFolder(zipFile, mogitDir);
   }
 
-  static void unzipFolder(File inputFile, File outputFile) {
+  public static void unzipFolder(File inputFile, File outputFile) {
     try(
         FileInputStream fis = new FileInputStream(inputFile);
         BufferedInputStream bis = new BufferedInputStream(fis);
@@ -73,7 +78,7 @@ public class PushedFromClient {
       }
 
       // 送信済みのzipを消去
-      File zipFile = new File("result.zip");
+      File zipFile = new File(Constants.SRC_PATH + "result.zip");
       if (zipFile.exists()) {
         zipFile.delete();
       }

@@ -1,11 +1,13 @@
+package mogitServer.src.commands.usermanage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class user_management {
-    private static final String CSV_FILE = "users.csv";
+import mogitServer.src.constants.Constants;
 
+public class user_management {
+    private static final String CSV_FILE = Constants.SRC_PATH + "users.csv";
 
     //csvファイルにユーザー、パスワード、メールを追加するための関数
     //ユーザー、メールアドレスがすでに存在していれば追加できないようになっている。

@@ -1,14 +1,13 @@
+package mogitServer.src.utils;
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
 import java.util.zip.*;
 
-import javax.print.FlavorException;
+import mogitServer.src.constants.Constants;
 
 import java.nio.file.*;
 
 public class Serverexp {
-
     public Serverexp() {
 
     }
@@ -16,7 +15,7 @@ public class Serverexp {
     //csvファイルに特定のユーザー名とメールアドレスがいるかのチェック
     public boolean checkUserExists(String username, String email) {
         boolean check = false;
-        try (BufferedReader br = new BufferedReader(new FileReader("users.csv"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(Constants.SRC_PATH + "users.csv"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] user = line.split(",");
@@ -107,7 +106,7 @@ public class Serverexp {
               socket.close();
               System.out.println("File Reception Successful...");
             }
-        }catch(IOException e){
+        } catch(IOException e) {
             e.printStackTrace();
         }
     }
@@ -158,7 +157,7 @@ public class Serverexp {
     }
 
     // フォルダを送る
-    public static void sendFolderToClient(ServerSocket serverSocket) {
+    public void sendFolderToClient(ServerSocket serverSocket) {
         try (Socket socket = serverSocket.accept()) {
             System.out.println("Established connection to Client... " + socket);
 
