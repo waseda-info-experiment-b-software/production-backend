@@ -7,7 +7,7 @@ import mogitClient.src.constants.Constants;
 public class MogitInit {
   /** プロジェクトルートディレクトリに、.mogitディレクトリを作成
    */
-  public void init() {
+  public static void init() {
     File file = new File(Constants.SRC_PATH + ".mogit");
     if (file.exists()) {
       System.out.println("already initialized");
