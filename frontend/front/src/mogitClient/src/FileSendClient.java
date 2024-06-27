@@ -182,10 +182,6 @@ public class FileSendClient {
                         System.out.println("cannot connect to server");
                       }
                       break;
-
-                    case "unzip":
-                      // client.unzipFileFromZip(parts[2]);
-                      break;
                     
                     case "bye":
                       client.sendcommandServer(parts[1], serverIP, PORT);
