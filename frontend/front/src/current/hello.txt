@@ -1,2 +1,2 @@
 こんにちは
-これは、feature/another-branchからの変更です。
+これはfeature/testから書き込まれました
