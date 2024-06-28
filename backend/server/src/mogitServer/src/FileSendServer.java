@@ -2,6 +2,7 @@ package mogitServer.src;
 import java.io.*;
 import java.net.*;
 
+import mogitServer.src.com.example.apiserver.Main;
 import mogitServer.src.commands.push.PushedFromClient;
 import mogitServer.src.utils.Serverexp;
 
@@ -20,7 +21,13 @@ public class FileSendServer {
     String username;
     String Email;
 
-  
+    Main main = new Main();
+    try {
+      main.start();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
    try {
       //サーバーの起動
       serverSocket = new ServerSocket(PORT);
@@ -32,6 +39,7 @@ public class FileSendServer {
           //終了
           case "bye":
             serverSocket.close();
+            main.stop();
             System.out.println("Server closed...");
             return;
 

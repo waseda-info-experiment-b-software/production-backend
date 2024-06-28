@@ -1,12 +1,24 @@
 version: "3.6"
 services:
+  web:
+    build:
+      context: ./nextjs-client/
+      dockerfile: Dockerfile
+    volumes:
+      - ./nextjs-client/app:/usr/src/app
+    command: "npm run dev"
+    ports:
+      - "12000:3000"
+
   java-server:
     build: ./backend/docker/java
     ports:
       - 8080:8080
+      - 8082:8082
     tty: true
     volumes:
       - ./backend/server/src:/usr/src:cached
+
   java-client:
     build: ./frontend/docker/java
     ports:
