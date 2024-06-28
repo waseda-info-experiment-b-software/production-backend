@@ -5,12 +5,9 @@ export default function Home() {
     <main className="max-w-[768px] mx-auto">
       <div className="py-6">
         <div className="flex items-center justify-between py-6">
-          <div className="px-3 py-1 border border-solid border-gray-400 bg-gray-600 rounded-md">
+          <div className="px-3 py-1 border border-solid border-gray-400 text-white bg-gray-600 rounded-md">
             develop
           </div>
-          <button className="px-3 py-1 rounded-md border border-solid text-white border-green-950 bg-green-700">
-            Code
-          </button>
         </div>
         <FileTableView />
       </div>

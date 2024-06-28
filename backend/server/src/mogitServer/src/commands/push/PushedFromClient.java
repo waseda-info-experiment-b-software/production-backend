@@ -55,7 +55,7 @@ public class PushedFromClient {
     }
 
     // .mogit/refs/heads/ブランチ名にあるコミットハッシュを取得
-    File branchFile = new File(Constants.SRC_PATH + ".mogit/refs/heads/" + branch);
+    File branchFile = new File(Constants.SRC_PATH + ".mogit/" + branch);
     String commitHash = "";
     try {
       byte[] data = Files.readAllBytes(Paths.get(branchFile.getPath()));
@@ -66,6 +66,7 @@ public class PushedFromClient {
 
     // currentディレクトリをそのコミットの状態にする
     revert(commitHash);
+    System.out.println("pushed successfully!!");
   }
 
   public static void unzipFolder(File inputFile, File outputFile) {
