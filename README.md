@@ -15,4 +15,6 @@
 . mogit.sh
 ```
 
-- これを行ったのち、http://localhost:12000　にアクセスすると、serverの内容が反映される。
+- これを行ったのち、
+  http://localhost:12000
+  にアクセスすると、serverの内容が反映される。
