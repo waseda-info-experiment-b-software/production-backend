@@ -1,5 +1,5 @@
-##　環境構築
-まずは docker-compose up -d にて Docker 環境を立てる
+## 環境構築
+まずは `docker-compose up -d` にて Docker 環境を立てる
 
 ## コンテナ内のシェルにて
 
